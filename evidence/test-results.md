@@ -55,7 +55,7 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | T5.2 | 5 | Detection test script + EICAR download | Alerts raised; incident note written | | | Not run | |
 | T5.3 | 5 | Web content filtering | Blocked category denied in browser | | | Not run | |
 | T5.4 | 5 | ASR rules (block mode) | Test triggers an ASR block event | | | Not run | |
-| T6.1 | 6 | `scripts/aws/check-account-baseline.sh` (before Phase 6 step 7) | Root MFA, no root keys, budget exists, org trail logging | | | Not run | |
+| T6.1 | 6 | `scripts/aws/check-account-baseline.sh` (before Phase 6 step 7) | Root MFA, no root keys, budget exists, org trail logging | 2026-10-25 | Early checks in console: root MFA = passkey, root access keys = 0, $5 monthly budget created (alert email verification pending). Org trail and script run wait for Phase 6 | Not run | `screenshots/T6.1-root-mfa.png` |
 | T6.2 | 6 | Developer signs in through Entra (My Apps → AWS) | Lands in AWS access portal; Dev = Developer, Prod = ReadOnly | | | Not run | |
 | T6.3 | 6 | Developer tries to create an S3 bucket in Prod | AccessDenied | | | Not run | |
 | T6.4 | 6 | Remove developer from SG-AWS-Developers | After next SCIM cycle, no AWS access | | | Not run | |
