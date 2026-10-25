@@ -13,22 +13,22 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 
 | Phase | Tests | Pass | Fail | Not run |
 |-------|------:|-----:|-----:|--------:|
-| 0 Preparation | 3 | 0 | 0 | 3 |
+| 0 Preparation | 3 | 1 | 0 | 2 |
 | 1 Identity foundation | 4 | 0 | 0 | 4 |
 | 2 Conditional Access | 7 | 0 | 0 | 7 |
 | 3 Privileged access & lifecycle | 6 | 0 | 0 | 6 |
 | 4 Intune & Autopilot | 5 | 0 | 0 | 5 |
 | 5 Defender | 4 | 0 | 0 | 4 |
 | 6 AWS workforce access | 6 | 0 | 0 | 6 |
-| **Total** | **35** | **0** | **0** | **35** |
+| **Total** | **35** | **1** | **0** | **34** |
 
 ## Test register
 
 | ID | Phase | Test | Expected result | Date | Actual result | Status | Evidence |
 |----|-------|------|-----------------|------|---------------|--------|----------|
-| T0.1 | 0 | GitHub repo exists with the Section 7 structure | Repo and folders present | | | Not run | |
+| T0.1 | 0 | GitHub repo exists with the Section 7 structure | Repo and folders present | 2026-10-25 | Private repo created with the Section 7 structure; lint CI green from run #2 (run #1 flagged SC2015, fixed in 5569cde) | Pass | GitHub Actions run #2 |
 | T0.2 | 0 | Windows 11 Enterprise VM boots; clean snapshot taken | VM reaches desktop; snapshot listed | | | Not run | |
-| T0.3 | 0 | `scripts/graph/Test-LabPrereqs.ps1 -Connect` | All rows PASS | | | Not run | |
+| T0.3 | 0 | `scripts/graph/Test-LabPrereqs.ps1 -Connect` | All rows PASS | 2026-10-25 | Offline checks PASS: PowerShell 7.6.8, Graph SDK 2.41.2, AWS CLI 2.38.5. `-Connect` needs the M365 tenant; re-run on Phase 1 day 1 | Blocked | `screenshots/T0.3-prereqs.png` |
 | T1.1 | 1 | `New-LabUsers.ps1` then `New-LabGroups.ps1` | 8 users; each in SG-All-Staff and the right SG-Dept-* group; devs in SG-AWS-Developers | | | Not run | |
 | T1.2 | 1 | Users licensed through SG-All-Staff | Each staff user shows the licence as "Inherited" | | | Not run | |
 | T1.3 | 1 | Sign in as a break-glass account | Alert fires within the configured window | | | Not run | |
