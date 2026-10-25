@@ -1,0 +1,28 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyOutsideSydneyExceptGlobalServices",
+      "Effect": "Deny",
+      "NotAction": [
+        "iam:*", "organizations:*", "sso:*", "sso-directory:*", "identitystore:*",
+        "sts:*", "support:*", "budgets:*", "ce:*", "cloudfront:*", "route53:*",
+        "health:*", "account:*", "trustedadvisor:*", "s3:ListAllMyBuckets"
+      ],
+      "Resource": "*",
+      "Condition": { "StringNotEquals": { "aws:RequestedRegion": ["ap-southeast-2"] } }
+    },
+    {
+      "Sid": "ProtectAuditTrail",
+      "Effect": "Deny",
+      "Action": ["cloudtrail:StopLogging", "cloudtrail:DeleteTrail", "cloudtrail:UpdateTrail"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "DenyLeavingOrganization",
+      "Effect": "Deny",
+      "Action": "organizations:LeaveOrganization",
+      "Resource": "*"
+    }
+  ]
+}

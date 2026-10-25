@@ -1,0 +1,66 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "BuildServicesInSydneyOnly",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:*",
+        "s3:*",
+        "dynamodb:*",
+        "logs:*",
+        "cloudwatch:*",
+        "cloudformation:*",
+        "apigateway:*",
+        "sqs:*",
+        "sns:*",
+        "ec2:Describe*",
+        "ec2:RunInstances",
+        "ec2:StartInstances",
+        "ec2:StopInstances",
+        "ec2:TerminateInstances",
+        "ec2:CreateTags"
+      ],
+      "Resource": "*",
+      "Condition": { "StringEquals": { "aws:RequestedRegion": "ap-southeast-2" } }
+    },
+    {
+      "Sid": "GlobalReadsTheConsoleNeeds",
+      "Effect": "Allow",
+      "Action": ["s3:ListAllMyBuckets", "iam:ListRoles", "iam:GetRole", "sts:GetCallerIdentity"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "PassOnlyApplicationRoles",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::*:role/dev-app/*",
+      "Condition": { "StringEquals": { "iam:PassedToService": ["lambda.amazonaws.com", "ec2.amazonaws.com"] } }
+    },
+    {
+      "Sid": "SmallInstancesOnly",
+      "Effect": "Deny",
+      "Action": "ec2:RunInstances",
+      "Resource": "arn:aws:ec2:*:*:instance/*",
+      "Condition": { "StringNotLike": { "ec2:InstanceType": ["t3.micro", "t3.small", "t4g.micro", "t4g.small"] } }
+    },
+    {
+      "Sid": "NoLongLivedCredentialsOrTrailTampering",
+      "Effect": "Deny",
+      "Action": [
+        "iam:CreateUser",
+        "iam:CreateAccessKey",
+        "iam:CreateLoginProfile",
+        "iam:CreateRole",
+        "iam:AttachRolePolicy",
+        "iam:PutRolePolicy",
+        "cloudtrail:StopLogging",
+        "cloudtrail:DeleteTrail",
+        "cloudtrail:UpdateTrail",
+        "cloudtrail:PutEventSelectors",
+        "organizations:LeaveOrganization"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

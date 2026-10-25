@@ -1,0 +1,8 @@
+{
+  "name": "Admin",
+  "description": "Full administration. Break-glass for AWS: not assigned to anyone by default.",
+  "sessionDuration": "PT1H",
+  "awsManagedPolicies": ["arn:aws:iam::aws:policy/AdministratorAccess"],
+  "assignments": [],
+  "leastPrivilegeRationale": "No standing assignment. When needed, the Owner approves a temporary assignment to a named user for a single account, recorded in the exception register and removed afterwards. Short 1-hour session."
+}

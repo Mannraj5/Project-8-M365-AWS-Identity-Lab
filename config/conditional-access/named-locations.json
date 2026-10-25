@@ -1,0 +1,12 @@
+{
+  "_comment": "Read by scripts/graph/New-LabCAPolicies.ps1 before the policies, so CA006 can reference NL-Australia.",
+  "namedLocations": [
+    {
+      "@odata.type": "#microsoft.graph.countryNamedLocation",
+      "displayName": "NL-Australia",
+      "countriesAndRegions": ["AU"],
+      "includeUnknownCountriesAndRegions": false,
+      "countryLookupMethod": "clientIpAddress"
+    }
+  ]
+}

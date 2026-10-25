@@ -1,0 +1,51 @@
+{
+  "_comment": "Group design for Harbourline Advisory. Read by scripts/graph/New-LabGroups.ps1. Dynamic rules use Entra ID membership rule syntax.",
+  "groups": [
+    {
+      "displayName": "SG-All-Staff",
+      "description": "All enabled staff with a department. Licensed by group; target of CA004.",
+      "type": "Dynamic",
+      "membershipRule": "(user.accountEnabled -eq true) -and (user.userType -eq \"Member\") -and (user.department -in [\"Management\",\"IT\",\"Advice\",\"Finance\",\"Development\"])"
+    },
+    {
+      "displayName": "SG-Dept-Advice",
+      "description": "Advice department.",
+      "type": "Dynamic",
+      "membershipRule": "(user.department -eq \"Advice\") -and (user.accountEnabled -eq true)"
+    },
+    {
+      "displayName": "SG-Dept-Finance",
+      "description": "Finance department.",
+      "type": "Dynamic",
+      "membershipRule": "(user.department -eq \"Finance\") -and (user.accountEnabled -eq true)"
+    },
+    {
+      "displayName": "SG-Dept-Dev",
+      "description": "Development department.",
+      "type": "Dynamic",
+      "membershipRule": "(user.department -eq \"Development\") -and (user.accountEnabled -eq true)"
+    },
+    {
+      "displayName": "SG-Admins-PIM",
+      "description": "Role-assignable group. Members are made ELIGIBLE (not active) for admin roles through PIM.",
+      "type": "Assigned",
+      "isAssignableToRole": true
+    },
+    {
+      "displayName": "SG-BreakGlass",
+      "description": "Emergency access accounts. Excluded from every Conditional Access policy. Sign-ins are alerted.",
+      "type": "Assigned",
+      "isAssignableToRole": true
+    },
+    {
+      "displayName": "SG-AWS-Developers",
+      "description": "Provisioned to AWS IAM Identity Center by SCIM. Developer permission set in Dev, ReadOnly in Prod.",
+      "type": "Assigned"
+    },
+    {
+      "displayName": "SG-AWS-ReadOnly",
+      "description": "Provisioned to AWS IAM Identity Center by SCIM. ReadOnly permission set in Dev and Prod.",
+      "type": "Assigned"
+    }
+  ]
+}

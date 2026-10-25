@@ -1,0 +1,11 @@
+{
+  "name": "Developer",
+  "description": "Build and run workloads in the Dev account, Sydney region only.",
+  "sessionDuration": "PT4H",
+  "awsManagedPolicies": [],
+  "inlinePolicyFile": "developer-inline-policy.json",
+  "assignments": [
+    { "group": "SG-AWS-Developers", "accounts": ["Dev"] }
+  ],
+  "leastPrivilegeRationale": "Assigned in Dev only, so it grants nothing in Prod. Allows a fixed list of build services and only in ap-southeast-2. Cannot create IAM users, access keys or roles (blocks the usual privilege-escalation paths), can only pass roles under the /dev-app/ path, and cannot stop or alter CloudTrail."
+}
