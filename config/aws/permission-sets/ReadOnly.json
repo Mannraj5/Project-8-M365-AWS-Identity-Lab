@@ -1,0 +1,11 @@
+{
+  "name": "ReadOnly",
+  "description": "View resource configuration in Dev and Prod. No data-plane reads.",
+  "sessionDuration": "PT4H",
+  "awsManagedPolicies": ["arn:aws:iam::aws:policy/job-function/ViewOnlyAccess"],
+  "assignments": [
+    { "group": "SG-AWS-ReadOnly", "accounts": ["Dev", "Prod"] },
+    { "group": "SG-AWS-Developers", "accounts": ["Prod"] }
+  ],
+  "leastPrivilegeRationale": "ViewOnlyAccess lists and describes resources but, unlike ReadOnlyAccess, does not allow reading S3 objects, DynamoDB items or secret values. Auditors and developers can see Prod configuration without seeing client data."
+}

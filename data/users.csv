@@ -1,0 +1,9 @@
+GivenName,Surname,MailNickname,Department,JobTitle,RoleTier,AwsGroup
+Olivia,Owner,olivia.owner,Management,Managing Director,Owner,
+Alex,Admin,alex.admin,IT,IT Administrator,Administrator,SG-AWS-ReadOnly
+Priya,Nair,priya.nair,Advice,Senior Financial Adviser,User,
+Tom,Fletcher,tom.fletcher,Advice,Financial Adviser,User,
+Mei,Chen,mei.chen,Finance,Finance Manager,User,
+Jack,Morrison,jack.morrison,Finance,Accounts Officer,User,
+Sam,Okafor,sam.okafor,Development,Software Developer,User,SG-AWS-Developers
+Ella,Ruiz,ella.ruiz,Development,Junior Developer,User,SG-AWS-Developers

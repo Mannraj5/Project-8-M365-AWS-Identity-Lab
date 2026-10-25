@@ -1,0 +1,17 @@
+{
+  "displayName": "CA006 - Block sign-ins from outside Australia",
+  "state": "enabledForReportingButNotEnforced",
+  "conditions": {
+    "clientAppTypes": ["all"],
+    "applications": { "includeApplications": ["All"] },
+    "locations": {
+      "includeLocations": ["All"],
+      "excludeLocations": ["{{location:NL-Australia}}"]
+    },
+    "users": {
+      "includeUsers": ["All"],
+      "excludeGroups": ["{{group:SG-BreakGlass}}"]
+    }
+  },
+  "grantControls": { "operator": "OR", "builtInControls": ["block"] }
+}

@@ -1,0 +1,19 @@
+# Script output: temporary passwords, leaver logs, raw exports. Never commit.
+out/
+
+# Unredacted material: keep it out of the repo entirely
+evidence/raw/
+*.unredacted.*
+
+# Device identifiers and credentials
+*autopilot*.csv
+*.hwid.csv
+credential-report*.csv
+.env
+*.pem
+*.key
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

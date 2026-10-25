@@ -1,0 +1,13 @@
+{
+  "displayName": "CA004 - Require compliant device for Microsoft 365",
+  "state": "enabledForReportingButNotEnforced",
+  "conditions": {
+    "clientAppTypes": ["all"],
+    "applications": { "includeApplications": ["Office365"] },
+    "users": {
+      "includeGroups": ["{{group:SG-All-Staff}}"],
+      "excludeGroups": ["{{group:SG-BreakGlass}}"]
+    }
+  },
+  "grantControls": { "operator": "OR", "builtInControls": ["compliantDevice"] }
+}

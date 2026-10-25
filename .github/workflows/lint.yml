@@ -1,0 +1,51 @@
+name: lint
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  powershell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          $all = Invoke-ScriptAnalyzer -Path scripts -Recurse -Settings ./PSScriptAnalyzerSettings.psd1
+          $all | Format-Table RuleName, Severity, ScriptName, Line, Message -AutoSize -Wrap
+          if ($all | Where-Object Severity -in 'Error', 'ParseError') { exit 1 }
+
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: shellcheck
+        run: shellcheck scripts/aws/*.sh
+
+  policies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: JSON is valid
+        run: find config -name '*.json' -print0 | xargs -0 -n1 jq empty
+      # A CA policy that forgets the break-glass exclusion can lock out the
+      # whole tenant, so treat it as a build failure.
+      - name: Every CA policy excludes SG-BreakGlass
+        run: |
+          status=0
+          for f in $(find config/conditional-access -name 'CA*.json'); do
+            jq -e '.conditions.users.excludeGroups | index("{{group:SG-BreakGlass}}")' "$f" >/dev/null \
+              || { echo "::error file=$f::does not exclude {{group:SG-BreakGlass}}"; status=1; }
+          done
+          exit $status
+      - name: No tenant GUIDs in committed policy templates
+        run: |
+          # Role template IDs and the built-in auth strength ID are global constants and allowed.
+          if grep -rEho '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' config/conditional-access \
+               | grep -v '^00000000-0000-0000-0000-00000000000[0-9]$' \
+               | grep -vxFf <(jq -r '.conditions.users.includeRoles[]?' config/conditional-access/CA*.json | sort -u); then
+            echo "::error::GUIDs above look tenant-specific; run Export-LabCAPolicies.ps1 to redact"
+            exit 1
+          fi
