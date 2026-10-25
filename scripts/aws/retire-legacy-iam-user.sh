@@ -29,7 +29,7 @@ case $action in
     echo "== Attached policies"; aws iam list-attached-user-policies --user-name "$user" --query 'AttachedPolicies[].PolicyName' --output text
     echo "== Inline policies";   aws iam list-user-policies          --user-name "$user" --query 'PolicyNames[]'            --output text
     echo "== Console password"
-    aws iam get-login-profile --user-name "$user" >/dev/null 2>&1 && echo "  yes" || echo "  no"
+    if aws iam get-login-profile --user-name "$user" >/dev/null 2>&1; then echo "  yes"; else echo "  no"; fi
     ;;
 
   deactivate)
@@ -44,7 +44,7 @@ case $action in
     [[ $answer == "$user" ]] || { echo "Aborted."; exit 1; }
 
     for k in $(keys); do aws iam delete-access-key --user-name "$user" --access-key-id "$k"; echo "Deleted key ****${k: -4}"; done
-    aws iam delete-login-profile --user-name "$user" 2>/dev/null && echo "Deleted console password" || true
+    if aws iam delete-login-profile --user-name "$user" 2>/dev/null; then echo "Deleted console password"; fi
     for p in $(aws iam list-user-policies --user-name "$user" --query 'PolicyNames[]' --output text); do
       aws iam delete-user-policy --user-name "$user" --policy-name "$p"; echo "Deleted inline policy $p"
     done
