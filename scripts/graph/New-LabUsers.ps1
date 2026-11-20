@@ -65,7 +65,7 @@ foreach ($u in $users) {
 }
 
 if ($created.Count -gt 0) {
-    $created | Export-Csv -Path $outFile -NoTypeInformation
+    $created | Export-Csv -Path $outFile
     Write-Warning "Temporary passwords written to $outFile. It is git-ignored; delete it after first sign-in."
 }
 Write-Host "Done: $($created.Count) created, $skipped already existed."
