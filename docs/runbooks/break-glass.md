@@ -18,6 +18,16 @@ Only when normal admin access is impossible, for example:
 - **Never screenshot, paste or send a break-glass password.** Capture evidence only after the screen has cleared.
 - If a password is ever exposed, treat it as compromised: reset it the same day and record it in `registers/incident-log.md` (see INC-001).
 
+## Lab configuration (as built 2026-11-20)
+
+| Account | Methods | Notes |
+|---|---|---|
+| bg-emergency-01 | Password (40+ chars, password manager), Microsoft Authenticator push, **device-bound passkey** in Authenticator | Synced Google passkey removed: break-glass credentials must not depend on a personal cloud account |
+| bg-emergency-02 | Same | Password rotated after INC-001 |
+
+**Lab simplification:** both passkeys are on one phone, which is a single point of failure.
+In production each account would use its own FIDO2 hardware key, stored in separate safes.
+
 ## How to sign in
 
 1. Get the password from offline storage (two-person rule if possible).
