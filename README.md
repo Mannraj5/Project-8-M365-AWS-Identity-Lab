@@ -62,7 +62,7 @@ Full design: [`docs/as-built.md`](docs/as-built.md).
 | Phase | Focus | Status |
 |-------|-------|--------|
 | 0 | Preparation: repo, VM, tools | Done |
-| 1 | Tenant and identity foundation | In progress (Entra ID Free) |
+| 1 | Tenant and identity foundation | Done (Entra ID Free): users, groups, break-glass, MFA |
 | 2 | Conditional Access (CA001–CA006) | Designed; not deployable on Free (EX-005) |
 | 3 | PIM and joiner-mover-leaver | Lifecycle: to do. PIM: not deployable on Free (EX-008) |
 | 4 | Intune and Autopilot | VM ready; not deployable without licence (EX-009) |
@@ -70,7 +70,7 @@ Full design: [`docs/as-built.md`](docs/as-built.md).
 | 6 | AWS workforce access | Not started |
 | 7 | Documentation and publishing | Not started |
 
-Tests: **5 passed, 19 blocked by licensing, 11 to run** ([`evidence/test-results.md`](evidence/test-results.md)).
+Tests: **6 passed, 19 blocked by licensing, 10 to run** ([`evidence/test-results.md`](evidence/test-results.md)).
 
 ## Repository layout
 
