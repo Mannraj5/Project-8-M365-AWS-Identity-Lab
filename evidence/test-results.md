@@ -17,14 +17,14 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 
 | Phase | Tests | Pass | Fail | Blocked | Not run |
 |-------|------:|-----:|-----:|--------:|--------:|
-| 0 Preparation | 3 | 2 | 0 | 1 | 0 |
+| 0 Preparation | 3 | 3 | 0 | 0 | 0 |
 | 1 Identity foundation | 4 | 0 | 0 | 1 | 3 |
 | 2 Conditional Access | 7 | 0 | 0 | 7 | 0 |
 | 3 Privileged access & lifecycle | 6 | 0 | 0 | 2 | 4 |
 | 4 Intune & Autopilot | 5 | 0 | 0 | 5 | 0 |
 | 5 Defender | 4 | 0 | 0 | 4 | 0 |
 | 6 AWS workforce access | 6 | 0 | 0 | 0 | 6 |
-| **Total** | **35** | **2** | **0** | **20** | **13** |
+| **Total** | **35** | **3** | **0** | **19** | **13** |
 
 ## Test register
 
@@ -32,7 +32,7 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 |----|-------|------|-----------------|------|---------------|--------|----------|
 | T0.1 | 0 | GitHub repo exists with the Section 7 structure | Repo and folders present | 2026-10-25 | Private repo created with the Section 7 structure; lint CI green from run #2 (run #1 flagged SC2015, fixed in 5569cde) | Pass | GitHub Actions run #2 |
 | T0.2 | 0 | Windows 11 Enterprise VM boots; clean snapshot taken | VM reaches desktop; snapshot listed | 2026-10-25 | HL-WIN11-01 (VirtualBox 7.2, EFI, Secure Boot, TPM 2.0, 4 vCPU, 6 GB) installed with Win11 Enterprise eval 26H2 and local account only; ISO ejected; snapshot `Clean` taken | Pass | `screenshots/T0.2-clean-snapshot.png` |
-| T0.3 | 0 | `scripts/graph/Test-LabPrereqs.ps1 -Connect` | All rows PASS | 2026-10-25 | Offline checks PASS: PowerShell 7.6.8, Graph SDK 2.41.2, AWS CLI 2.38.5. `-Connect` needs the M365 tenant; re-run on Phase 1 day 1 | Blocked | `screenshots/T0.3-prereqs.png` |
+| T0.3 | 0 | `scripts/graph/Test-LabPrereqs.ps1 -Connect` | All rows PASS | 2026-11-20 | PowerShell 7.7.0, Graph SDK 2.41.2, AWS CLI 2.38.5 and Connect-MgGraph (setup.admin, lab tenant) all PASS. Sign-in uses browser auth (`Set-MgGraphOption -DisableLoginByWAM $true`) because the Windows broker could not use the browser-stored passkey | Pass | `screenshots/T0.3-prereqs.png`, `screenshots/T0.3-prereqs-connect.png` |
 | T1.1 | 1 | `New-LabUsers.ps1` then `New-LabGroups.ps1 -FreeTier` | 8 users; each in SG-All-Staff and the right SG-Dept-* group; devs in SG-AWS-Developers | | | Not run | |
 | T1.2 | 1 | Users licensed through SG-All-Staff | Each staff user shows the licence as "Inherited" | 2026-11-20 | EX-004: Entra ID Free has no licences to assign | Blocked | |
 | T1.3 | 1 | Sign in as a break-glass account; find it in the sign-in log (EX-010: no automated alert on Free) | Sign-in appears in the sign-in log and is reviewed within the weekly window | | | Not run | |
