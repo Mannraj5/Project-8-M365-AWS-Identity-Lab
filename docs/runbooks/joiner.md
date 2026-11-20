@@ -19,13 +19,16 @@ access is granted by hand, because it is higher risk.
    ```
    Check: Department is one of Management, IT, Advice, Finance, Development. A typo
    means **no licence and no department access**.
-3. Wait for dynamic membership (usually minutes), then confirm:
+3. **Entra ID Free:** run `./scripts/graph/New-LabGroups.ps1 -Domain <tenant>.onmicrosoft.com -FreeTier`
+   to add them to their department groups (EX-006). On P1, wait for dynamic membership
+   (usually minutes) instead. Then confirm:
    ```powershell
    Get-MgUserMemberOf -UserId <upn> | ForEach-Object { $_.AdditionalProperties.displayName }
    ```
    Expected: SG-All-Staff and the right SG-Dept-* group.
-4. Developers only: add to **SG-AWS-Developers** after the Owner approves. SCIM creates
-   their AWS identity on the next cycle.
+4. Developers only: add to **SG-AWS-Developers** after the Owner approves.
+   **Entra ID Free:** also assign the user to the *AWS IAM Identity Center* enterprise app
+   directly (EX-011). SCIM creates their AWS identity on the next cycle.
 5. Give the temporary password through a separate channel from the username
    (for example, username by email, password by phone).
 6. On day one, the user signs in, changes the password and registers MFA

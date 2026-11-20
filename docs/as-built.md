@@ -10,6 +10,7 @@
 | Last updated | 2026-10-25 |
 | Tenant | `TBD`.onmicrosoft.com (Microsoft 365 E5 trial, activated `TBD`, expires `TBD`) |
 | AWS organisation | Management + Dev + Prod (`ap-southeast-2`) |
+| Licensing | **Microsoft Entra ID Free** (card-free by design, EX-004). Sections 4–7 describe the P1/P2 target design; what is actually deployed is marked **Deployed** or **Design only** |
 
 ## 1. Architecture
 
@@ -53,7 +54,12 @@ Source of truth: `config/groups.json`.
 **Design note:** licences come from SG-All-Staff, which requires
 `accountEnabled = true`. A leaver loses the licence automatically once disabled.
 
-## 4. Conditional Access
+**Deployed on Free:** all eight groups exist as *assigned* groups.
+`New-LabGroups.ps1 -FreeTier` reproduces the dynamic rules from the department
+attribute and must be re-run after a joiner, mover or leaver (EX-006). SG-BreakGlass
+and SG-Admins-PIM are ordinary groups (EX-007). No licensing (EX-004).
+
+## 4. Conditional Access (Design only on Free – EX-005; Security Defaults ON instead)
 
 Source of truth: `config/conditional-access/` (templates) and `config/conditional-access/exported/` (as deployed).
 
@@ -69,12 +75,12 @@ Source of truth: `config/conditional-access/` (templates) and `config/conditiona
 Deployment: report-only first (`New-LabCAPolicies.ps1`), review sign-in logs, then
 `Set-LabCAPolicyState.ps1 -State enabled`.
 
-## 5. Privileged access (PIM)
+## 5. Privileged access (PIM) (Design only on Free – EX-008)
 
 See `runbooks/pim-activation.md` for role settings. Access review: quarterly on
 SG-Admins-PIM, reviewer = Owner, auto-remove on no response: `TBD`.
 
-## 6. Devices (Intune)
+## 6. Devices (Intune) (Design only – EX-009)
 
 | Item | Setting |
 |------|---------|
@@ -86,7 +92,7 @@ SG-Admins-PIM, reviewer = Owner, auto-remove on no response: `TBD`.
 | App Control for Business | Audit `TBD date` → Enforce `TBD date` |
 | Update rings | `TBD` |
 
-## 7. Defender for Endpoint
+## 7. Defender for Endpoint (Design only – EX-009)
 
 Onboarded via Intune EDR policy. ASR rules: `TBD list` (audit → block). Network protection: block. Web content filtering categories blocked: `TBD`.
 
@@ -115,3 +121,4 @@ SCIM: Entra enterprise app "AWS IAM Identity Center", scope = assigned users and
 | Date | Change | By |
 |------|--------|----|
 | 2026-10-25 | Initial design | MSM |
+| 2026-11-20 | Tenant on Entra ID Free; `-FreeTier` group sync; exceptions EX-004 to EX-011 | MSM |

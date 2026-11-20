@@ -8,10 +8,15 @@
 
 1. Record the old and new department and the effective date.
 2. Activate **User Administrator** in PIM.
-3. Change the department; dynamic groups do the rest:
+3. Change the department:
    ```powershell
    Update-MgUser -UserId <upn> -Department 'Advice' -JobTitle 'Financial Adviser'
    ```
+   On P1, dynamic groups do the rest. **On Entra ID Free (EX-006)**, sync the groups:
+   ```powershell
+   ./scripts/graph/New-LabGroups.ps1 -Domain <tenant>.onmicrosoft.com -FreeTier
+   ```
+   Expect a `REMOVE ... from SG-Dept-<old>` and a `MEMBER ... -> SG-Dept-<new>` line.
 4. Review **assigned** (non-dynamic) groups by hand; these do not change on their own:
    - Leaving Development? Remove from SG-AWS-Developers.
    - Anything else not needed for the new role.

@@ -1,29 +1,45 @@
 {
-  "_comment": "Group design for Harbourline Advisory. Read by scripts/graph/New-LabGroups.ps1. Dynamic rules use Entra ID membership rule syntax.",
+  "_comment": "Group design for Harbourline Advisory. Read by scripts/graph/New-LabGroups.ps1. Dynamic rules use Entra ID membership rule syntax (needs Entra ID P1). On Entra ID Free, run New-LabGroups.ps1 -FreeTier: dynamic groups are created as assigned groups and kept in sync from each user's department using freeTierDepartments, which mirrors the rule.",
   "groups": [
     {
       "displayName": "SG-All-Staff",
       "description": "All enabled staff with a department. Licensed by group; target of CA004.",
       "type": "Dynamic",
-      "membershipRule": "(user.accountEnabled -eq true) -and (user.userType -eq \"Member\") -and (user.department -in [\"Management\",\"IT\",\"Advice\",\"Finance\",\"Development\"])"
+      "membershipRule": "(user.accountEnabled -eq true) -and (user.userType -eq \"Member\") -and (user.department -in [\"Management\",\"IT\",\"Advice\",\"Finance\",\"Development\"])",
+      "freeTierDepartments": [
+        "Management",
+        "IT",
+        "Advice",
+        "Finance",
+        "Development"
+      ]
     },
     {
       "displayName": "SG-Dept-Advice",
       "description": "Advice department.",
       "type": "Dynamic",
-      "membershipRule": "(user.department -eq \"Advice\") -and (user.accountEnabled -eq true)"
+      "membershipRule": "(user.department -eq \"Advice\") -and (user.accountEnabled -eq true)",
+      "freeTierDepartments": [
+        "Advice"
+      ]
     },
     {
       "displayName": "SG-Dept-Finance",
       "description": "Finance department.",
       "type": "Dynamic",
-      "membershipRule": "(user.department -eq \"Finance\") -and (user.accountEnabled -eq true)"
+      "membershipRule": "(user.department -eq \"Finance\") -and (user.accountEnabled -eq true)",
+      "freeTierDepartments": [
+        "Finance"
+      ]
     },
     {
       "displayName": "SG-Dept-Dev",
       "description": "Development department.",
       "type": "Dynamic",
-      "membershipRule": "(user.department -eq \"Development\") -and (user.accountEnabled -eq true)"
+      "membershipRule": "(user.department -eq \"Development\") -and (user.accountEnabled -eq true)",
+      "freeTierDepartments": [
+        "Development"
+      ]
     },
     {
       "displayName": "SG-Admins-PIM",

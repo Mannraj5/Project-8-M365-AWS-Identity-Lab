@@ -28,6 +28,11 @@ Only when normal admin access is impossible, for example:
 
 ## Monitoring (set up in Phase 1, evidence T1.3)
 
+**On Entra ID Free (EX-010):** there is no automated alert. Every week, and after any use,
+open **Entra admin center > Monitoring & health > Sign-in logs**, filter **User** contains
+`bg-emergency`, and record the result (date, any sign-ins, explanation) in the incident log.
+The options below apply once the tenant has P1 and an Azure subscription.
+
 Sign-ins by these accounts must alert. Options, best first:
 
 1. **Log Analytics alert rule.** Send Entra sign-in logs to a Log Analytics

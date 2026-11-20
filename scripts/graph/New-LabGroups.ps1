@@ -13,9 +13,18 @@ SG-All-Staff, and adds AWS group members from data/users.csv.
   can only be changed by those roles, which protects the CA exclusion group.
 - Existing groups are skipped, so the script is safe to re-run.
 
+-FreeTier (tenant on Microsoft Entra ID Free, no P1):
+- Dynamic groups are created as ordinary assigned groups instead, and the
+  script keeps them in sync with each user's department, using the
+  freeTierDepartments list in groups.json in place of the rule. Re-run it
+  after a joiner, mover or leaver to add and remove members.
+- Groups are not made role-assignable (that needs P1), and licensing is
+  skipped (Free has no licences to assign).
+
 .EXAMPLE
 ./New-LabGroups.ps1 -Domain harbourlinelab.onmicrosoft.com -WhatIf
 ./New-LabGroups.ps1 -Domain harbourlinelab.onmicrosoft.com -SkuPartNumber SPE_E5
+./New-LabGroups.ps1 -Domain harbourlinelab.onmicrosoft.com -FreeTier
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
@@ -24,15 +33,18 @@ param(
     [string]$CsvPath = (Join-Path $PSScriptRoot '../../data/users.csv'),
     # Run Get-MgSubscribedSku | Select SkuPartNumber to see what the trial gives you.
     [string]$SkuPartNumber = 'SPE_E5',
-    [string]$LicensedGroup = 'SG-All-Staff'
+    [string]$LicensedGroup = 'SG-All-Staff',
+    # Tenant is on Entra ID Free: no dynamic or role-assignable groups, no licensing.
+    [switch]$FreeTier
 )
 
 . "$PSScriptRoot/LabHelpers.ps1"
 
-Connect-LabGraph -Scopes @(
-    'Group.ReadWrite.All', 'GroupMember.ReadWrite.All', 'User.Read.All',
-    'RoleManagement.ReadWrite.Directory', 'LicenseAssignment.ReadWrite.All', 'Organization.Read.All'
-)
+$scopes = @('Group.ReadWrite.All', 'GroupMember.ReadWrite.All', 'User.Read.All')
+if (-not $FreeTier) {
+    $scopes += 'RoleManagement.ReadWrite.Directory', 'LicenseAssignment.ReadWrite.All', 'Organization.Read.All'
+}
+Connect-LabGraph -Scopes $scopes
 
 $design = Get-Content -Raw -Path $GroupsPath | ConvertFrom-Json
 
@@ -42,7 +54,8 @@ foreach ($g in $design.groups) {
         Write-Host "SKIP   $($g.displayName) (already exists)"
         continue
     }
-    if (-not $PSCmdlet.ShouldProcess($g.displayName, "Create $($g.type) group")) { continue }
+    $kind = if ($FreeTier -and $g.type -eq 'Dynamic') { 'Assigned (Free tier)' } else { $g.type }
+    if (-not $PSCmdlet.ShouldProcess($g.displayName, "Create $kind group")) { continue }
 
     $params = @{
         DisplayName     = $g.displayName
@@ -51,35 +64,72 @@ foreach ($g in $design.groups) {
         MailNickname    = $g.displayName.ToLower()
         SecurityEnabled = $true
     }
-    if ($g.type -eq 'Dynamic') {
+    if ($g.type -eq 'Dynamic' -and -not $FreeTier) {
         $params.GroupTypes = @('DynamicMembership')
         $params.MembershipRule = $g.membershipRule
         $params.MembershipRuleProcessingState = 'On'
     }
-    if ($g.PSObject.Properties['isAssignableToRole'] -and $g.isAssignableToRole) {
+    if ($g.PSObject.Properties['isAssignableToRole'] -and $g.isAssignableToRole -and -not $FreeTier) {
         $params.IsAssignableToRole = $true
     }
     New-MgGroup @params -ErrorAction Stop | Out-Null
-    Write-Host "CREATE $($g.displayName)"
+    Write-Host "CREATE $($g.displayName)$(if ($FreeTier -and $g.type -eq 'Dynamic') { ' (assigned: Free tier)' })"
+}
+
+# --- 1b. Free tier: keep department groups in sync, as a dynamic rule would ---
+if ($FreeTier) {
+    # Same conditions as the dynamic rules: enabled member accounts with a department.
+    $allUsers = @(Get-MgUser -All -Property 'id,userPrincipalName,department,accountEnabled,userType')
+    $staff = @($allUsers | Where-Object { $_.AccountEnabled -and $_.UserType -eq 'Member' -and $_.Department })
+    $upnById = @{}
+    foreach ($u in $allUsers) { $upnById[$u.Id] = $u.UserPrincipalName }
+
+    foreach ($g in $design.groups | Where-Object { $_.PSObject.Properties['freeTierDepartments'] }) {
+        $group = Get-LabGroupByName $g.displayName
+        if (-not $group) {
+            Write-Warning "$($g.displayName) does not exist yet (expected under -WhatIf)."
+            continue
+        }
+        $want = @($staff | Where-Object { $_.Department -in $g.freeTierDepartments })
+        $have = @(Get-MgGroupMember -GroupId $group.Id -All)
+
+        foreach ($u in $want | Where-Object { $_.Id -notin $have.Id }) {
+            if ($PSCmdlet.ShouldProcess("$($u.UserPrincipalName) -> $($g.displayName)", 'Add member')) {
+                New-MgGroupMember -GroupId $group.Id -DirectoryObjectId $u.Id
+                Write-Host "MEMBER $($u.UserPrincipalName) -> $($g.displayName)"
+            }
+        }
+        foreach ($m in $have | Where-Object { $_.Id -notin $want.Id }) {
+            $who = if ($upnById[$m.Id]) { $upnById[$m.Id] } else { $m.Id }
+            if ($PSCmdlet.ShouldProcess("$who from $($g.displayName)", 'Remove member')) {
+                Remove-MgGroupMemberDirectoryObjectByRef -GroupId $group.Id -DirectoryObjectId $m.Id
+                Write-Host "REMOVE $who from $($g.displayName) (department or account no longer matches)"
+            }
+        }
+    }
 }
 
 # --- 2. Group-based licensing --------------------------------------------------
-$sku = Get-MgSubscribedSku -All | Where-Object SkuPartNumber -eq $SkuPartNumber
-$licensed = Get-LabGroupByName $LicensedGroup
-if ($licensed) {
-    # assignedLicenses is not in the default property set.
-    $licensed = Get-MgGroup -GroupId $licensed.Id -Property 'id,displayName,assignedLicenses'
-}
-if (-not $sku) {
-    $available = (Get-MgSubscribedSku -All).SkuPartNumber -join ', '
-    Write-Warning "SKU '$SkuPartNumber' not found. Available: $available. Re-run with -SkuPartNumber."
-} elseif (-not $licensed) {
-    Write-Warning "$LicensedGroup does not exist yet (expected under -WhatIf)."
-} elseif ($licensed.AssignedLicenses.SkuId -contains $sku.SkuId) {
-    Write-Host "SKIP   licence $SkuPartNumber already on $LicensedGroup"
-} elseif ($PSCmdlet.ShouldProcess($LicensedGroup, "Assign licence $SkuPartNumber")) {
-    Set-MgGroupLicense -GroupId $licensed.Id -AddLicenses @(@{ SkuId = $sku.SkuId }) -RemoveLicenses @() | Out-Null
-    Write-Host "LICENCE $SkuPartNumber -> $LicensedGroup"
+if ($FreeTier) {
+    Write-Host 'SKIP   licensing (Entra ID Free has no licences to assign)'
+} else {
+    $sku = Get-MgSubscribedSku -All | Where-Object SkuPartNumber -eq $SkuPartNumber
+    $licensed = Get-LabGroupByName $LicensedGroup
+    if ($licensed) {
+        # assignedLicenses is not in the default property set.
+        $licensed = Get-MgGroup -GroupId $licensed.Id -Property 'id,displayName,assignedLicenses'
+    }
+    if (-not $sku) {
+        $available = (Get-MgSubscribedSku -All).SkuPartNumber -join ', '
+        Write-Warning "SKU '$SkuPartNumber' not found. Available: $available. Re-run with -SkuPartNumber."
+    } elseif (-not $licensed) {
+        Write-Warning "$LicensedGroup does not exist yet (expected under -WhatIf)."
+    } elseif ($licensed.AssignedLicenses.SkuId -contains $sku.SkuId) {
+        Write-Host "SKIP   licence $SkuPartNumber already on $LicensedGroup"
+    } elseif ($PSCmdlet.ShouldProcess($LicensedGroup, "Assign licence $SkuPartNumber")) {
+        Set-MgGroupLicense -GroupId $licensed.Id -AddLicenses @(@{ SkuId = $sku.SkuId }) -RemoveLicenses @() | Out-Null
+        Write-Host "LICENCE $SkuPartNumber -> $LicensedGroup"
+    }
 }
 
 # --- 3. AWS group membership (assigned, so removal is a deliberate act) ------
@@ -100,5 +150,9 @@ foreach ($u in Import-Csv -Path $CsvPath | Where-Object AwsGroup) {
     }
 }
 
-Write-Host "`nDynamic membership can take several minutes. Check with:"
-Write-Host "  Get-MgGroupMember -GroupId (Get-MgGroup -Filter `"displayName eq 'SG-Dept-Dev'`").Id -All"
+if ($FreeTier) {
+    Write-Host "`nFree tier: department groups are synced by this script. Re-run it after any joiner, mover or leaver."
+} else {
+    Write-Host "`nDynamic membership can take several minutes. Check with:"
+    Write-Host "  Get-MgGroupMember -GroupId (Get-MgGroup -Filter `"displayName eq 'SG-Dept-Dev'`").Id -All"
+}

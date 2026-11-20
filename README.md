@@ -3,9 +3,24 @@
 Build, secure, test and document a small Microsoft 365 and AWS identity
 environment for a fictional regulated firm, with evidence an auditor would accept.
 
-> **Status: Phase 0 (preparation).** Scripts, policy definitions, templates and
-> the test plan are ready; nothing has been deployed yet. Results below are
-> filled in from `evidence/test-results.md` as each phase passes.
+> **Status: Phase 1 (identity foundation), on Microsoft Entra ID Free.** Results
+> are filled in from `evidence/test-results.md` as each phase passes.
+
+## Licensing: a deliberate constraint
+
+Every paid Microsoft trial (M365 E3/E5, Entra ID P1/P2, Intune, Defender) needs a
+payment card, so this lab runs **card-free on Microsoft Entra ID Free**. What that
+means, decided up front and logged in the [exception register](registers/exception-register.md):
+
+| Built and tested for real | Designed and ready, but not deployed (needs P1/P2/Intune) |
+|---|---|
+| Users, groups (department sync by script), break-glass accounts | Conditional Access CA001–CA006 (JSON in `config/`) – **EX-005** |
+| MFA via Security Defaults, sign-in and audit logs | Dynamic and role-assignable groups – **EX-006/007** |
+| Joiner / mover / leaver automation | PIM, access reviews, risk-based CA – **EX-008** |
+| AWS IAM Identity Center federation with Entra (SAML + SCIM) | Intune, Autopilot, Defender for Endpoint – **EX-009** |
+
+Every blocked control has a compensating control and a review date. The P1/P2
+design can be deployed unchanged on a licensed tenant (run the scripts without `-FreeTier`).
 
 ## Scenario
 
@@ -46,16 +61,16 @@ Full design: [`docs/as-built.md`](docs/as-built.md).
 
 | Phase | Focus | Status |
 |-------|-------|--------|
-| 0 | Preparation: repo, VM, tools | In progress |
-| 1 | Tenant and identity foundation | Not started |
-| 2 | Conditional Access (CA001–CA006) | Not started |
-| 3 | PIM and joiner-mover-leaver | Not started |
-| 4 | Intune and Autopilot | Not started |
-| 5 | Microsoft Defender | Not started |
+| 0 | Preparation: repo, VM, tools | Done |
+| 1 | Tenant and identity foundation | In progress (Entra ID Free) |
+| 2 | Conditional Access (CA001–CA006) | Designed; not deployable on Free (EX-005) |
+| 3 | PIM and joiner-mover-leaver | Lifecycle: to do. PIM: not deployable on Free (EX-008) |
+| 4 | Intune and Autopilot | VM ready; not deployable without licence (EX-009) |
+| 5 | Microsoft Defender | Not deployable without licence (EX-009) |
 | 6 | AWS workforce access | Not started |
 | 7 | Documentation and publishing | Not started |
 
-Tests passed: **0 / 35** ([`evidence/test-results.md`](evidence/test-results.md)).
+Tests: **2 passed, 20 blocked by licensing, 13 to run** ([`evidence/test-results.md`](evidence/test-results.md)).
 
 ## Repository layout
 
@@ -86,7 +101,7 @@ run that first.
 # Phase 1
 $d = '<tenant>.onmicrosoft.com'
 ./scripts/graph/New-LabUsers.ps1 -Domain $d
-./scripts/graph/New-LabGroups.ps1 -Domain $d          # -SkuPartNumber if the trial SKU differs
+./scripts/graph/New-LabGroups.ps1 -Domain $d -FreeTier   # Entra ID Free; omit -FreeTier on a P1/P2 tenant
 ./scripts/graph/New-BreakGlassAccounts.ps1 -Domain $d
 
 # Phase 2: always created report-only
