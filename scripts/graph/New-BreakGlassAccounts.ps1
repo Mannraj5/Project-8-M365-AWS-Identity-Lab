@@ -27,7 +27,7 @@ param(
 
 $GlobalAdminRoleId = '62e90394-69f5-4237-9190-012177145e10'
 
-Connect-LabGraph -Scopes @('User.ReadWrite.All', 'GroupMember.ReadWrite.All', 'RoleManagement.ReadWrite.Directory')
+Connect-LabGraph -Scopes @('User.ReadWrite.All', 'GroupMember.ReadWrite.All', 'RoleManagement.ReadWrite.Directory') -TenantDomain $Domain
 
 $bgGroup = Get-LabGroupByName 'SG-BreakGlass'
 if (-not $bgGroup) { throw 'SG-BreakGlass does not exist. Run New-LabGroups.ps1 first.' }

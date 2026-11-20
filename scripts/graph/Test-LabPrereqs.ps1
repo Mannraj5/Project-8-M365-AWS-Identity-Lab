@@ -6,10 +6,14 @@ installed, and (with -Connect) Connect-MgGraph works.
 
 .EXAMPLE
 ./Test-LabPrereqs.ps1
-./Test-LabPrereqs.ps1 -Connect
+./Test-LabPrereqs.ps1 -Connect -Domain harbourlinelab.onmicrosoft.com
 #>
 [CmdletBinding()]
-param([switch]$Connect)
+param(
+    [switch]$Connect,
+    # With -Connect: refuse any sign-in that is not for this tenant.
+    [string]$Domain
+)
 
 . "$PSScriptRoot/LabHelpers.ps1"
 
@@ -29,7 +33,7 @@ Add-Result -Check 'AWS CLI v2' -Pass ([bool]$aws -and $awsVersion -match 'aws-cl
 
 if ($Connect) {
     try {
-        Connect-LabGraph -Scopes 'User.Read'
+        Connect-LabGraph -Scopes 'User.Read' -TenantDomain $Domain
         $ctx = Get-MgContext
         # Only the domain suffix of the account is shown, so the output can go in evidence.
         $who = ($ctx.Account -replace '^[^@]+', '***')

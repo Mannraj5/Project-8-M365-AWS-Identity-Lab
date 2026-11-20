@@ -24,6 +24,8 @@ after reviewing its report-only results: Set-LabCAPolicyState.ps1.
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
+    # Refuse to run against any tenant that does not own this domain (recommended).
+    [string]$Domain,
     [string]$PolicyDir = (Join-Path $PSScriptRoot '../../config/conditional-access'),
     # Policy ID prefixes to create, e.g. CA001. Default: all.
     [string[]]$Include
@@ -31,7 +33,7 @@ param(
 
 . "$PSScriptRoot/LabHelpers.ps1"
 
-Connect-LabGraph -Scopes @('Policy.ReadWrite.ConditionalAccess', 'Policy.Read.All', 'Group.Read.All', 'Application.Read.All')
+Connect-LabGraph -Scopes @('Policy.ReadWrite.ConditionalAccess', 'Policy.Read.All', 'Group.Read.All', 'Application.Read.All') -TenantDomain $Domain
 
 # --- 1. Named locations ------------------------------------------------------
 $locationIds = @{}

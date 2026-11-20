@@ -19,12 +19,14 @@ kept as-is.
 #>
 [CmdletBinding()]
 param(
+    # Refuse to run against any tenant that does not own this domain (recommended).
+    [string]$Domain,
     [string]$OutputDir = (Join-Path $PSScriptRoot '../../config/conditional-access/exported')
 )
 
 . "$PSScriptRoot/LabHelpers.ps1"
 
-Connect-LabGraph -Scopes @('Policy.Read.All', 'Group.Read.All')
+Connect-LabGraph -Scopes @('Policy.Read.All', 'Group.Read.All') -TenantDomain $Domain
 
 if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir | Out-Null }
 

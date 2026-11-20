@@ -15,13 +15,15 @@ policy to 'enabled' it checks that the policy still excludes SG-BreakGlass.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
 param(
+    # Refuse to run against any tenant that does not own this domain (recommended).
+    [string]$Domain,
     [Parameter(Mandatory)][ValidatePattern('^CA\d{3}$')][string[]]$Policy,
     [Parameter(Mandatory)][ValidateSet('enabled', 'disabled', 'enabledForReportingButNotEnforced')][string]$State
 )
 
 . "$PSScriptRoot/LabHelpers.ps1"
 
-Connect-LabGraph -Scopes @('Policy.ReadWrite.ConditionalAccess', 'Policy.Read.All', 'Group.Read.All')
+Connect-LabGraph -Scopes @('Policy.ReadWrite.ConditionalAccess', 'Policy.Read.All', 'Group.Read.All') -TenantDomain $Domain
 
 $breakGlassId = (Get-LabGroupByName 'SG-BreakGlass').Id
 if (-not $breakGlassId) { throw 'SG-BreakGlass does not exist.' }

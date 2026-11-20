@@ -44,7 +44,7 @@ $scopes = @('Group.ReadWrite.All', 'GroupMember.ReadWrite.All', 'User.Read.All')
 if (-not $FreeTier) {
     $scopes += 'RoleManagement.ReadWrite.Directory', 'LicenseAssignment.ReadWrite.All', 'Organization.Read.All'
 }
-Connect-LabGraph -Scopes $scopes
+Connect-LabGraph -Scopes $scopes -TenantDomain $Domain
 
 $design = Get-Content -Raw -Path $GroupsPath | ConvertFrom-Json
 

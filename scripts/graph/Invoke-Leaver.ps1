@@ -39,7 +39,8 @@ $scopes = @(
 if ($RetireDevices) {
     $scopes += 'DeviceManagementManagedDevices.Read.All', 'DeviceManagementManagedDevices.PrivilegedOperations.All'
 }
-Connect-LabGraph -Scopes $scopes
+# The tenant is the one that owns the leaver's UPN domain.
+Connect-LabGraph -Scopes $scopes -TenantDomain ($UserPrincipalName.Split('@')[1])
 
 $user = Get-MgUser -UserId $UserPrincipalName -Property 'id,userPrincipalName,accountEnabled,department' -ErrorAction Stop
 $alias = $UserPrincipalName.Split('@')[0]

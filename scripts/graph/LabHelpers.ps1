@@ -9,21 +9,59 @@ $script:RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 # Anything written here may contain secrets or tenant data; it is git-ignored.
 $script:OutDir = Join-Path $script:RepoRoot 'out'
 
+function Test-LabTenant {
+    <#
+    .SYNOPSIS
+    True when the signed-in tenant owns the given domain (one of its verified domains).
+    #>
+    param([Parameter(Mandatory)][string]$TenantDomain)
+
+    $org = Invoke-MgGraphRequest -Method GET -Uri '/v1.0/organization?$select=displayName,verifiedDomains' -OutputType Hashtable
+    $domains = @($org['value'] | ForEach-Object { $_['verifiedDomains'] } | ForEach-Object { $_['name'] })
+    return $domains -contains $TenantDomain
+}
+
 function Connect-LabGraph {
     <#
     .SYNOPSIS
     Connects to Microsoft Graph with the given delegated scopes, reusing the
     current session when it already has them.
+
+    .DESCRIPTION
+    With -TenantDomain, sign-in is pinned to that tenant, and the connection is
+    refused (and disconnected) unless the signed-in tenant owns that domain.
+    This stops a script from ever running against the wrong directory, for
+    example a university or work account picked by mistake at sign-in.
     #>
-    param([Parameter(Mandatory)][string[]]$Scopes)
+    param(
+        [Parameter(Mandatory)][string[]]$Scopes,
+        [string]$TenantDomain
+    )
 
     $ctx = Get-MgContext
+    $connect = -not $ctx
     if ($ctx) {
         $missing = $Scopes | Where-Object { $_ -notin $ctx.Scopes }
-        if (-not $missing) { return }
-        Write-Verbose "Reconnecting to add scopes: $($missing -join ', ')"
+        if ($missing) {
+            Write-Verbose "Reconnecting to add scopes: $($missing -join ', ')"
+            $connect = $true
+        } elseif ($TenantDomain -and -not (Test-LabTenant $TenantDomain)) {
+            Write-Warning "Current Graph session is for another tenant; reconnecting to $TenantDomain."
+            Disconnect-MgGraph | Out-Null
+            $connect = $true
+        }
     }
-    Connect-MgGraph -Scopes $Scopes -NoWelcome -ErrorAction Stop
+    if ($connect) {
+        $params = @{ Scopes = $Scopes; NoWelcome = $true; ErrorAction = 'Stop' }
+        if ($TenantDomain) { $params.TenantId = $TenantDomain }
+        Connect-MgGraph @params
+    }
+
+    if ($TenantDomain -and -not (Test-LabTenant $TenantDomain)) {
+        $account = (Get-MgContext).Account
+        Disconnect-MgGraph | Out-Null
+        throw "Signed in as $account, whose tenant does not own $TenantDomain. Disconnected; nothing was changed. Sign in with an account from $TenantDomain."
+    }
 }
 
 function Get-LabGraphCollection {

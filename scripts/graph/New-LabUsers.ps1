@@ -29,7 +29,7 @@ param(
 . "$PSScriptRoot/LabHelpers.ps1"
 
 $users = Import-Csv -Path $CsvPath
-Connect-LabGraph -Scopes 'User.ReadWrite.All'
+Connect-LabGraph -Scopes 'User.ReadWrite.All' -TenantDomain $Domain
 
 $outFile = Join-Path (Initialize-LabOutDir) ('initial-passwords-{0:yyyyMMdd-HHmmss}.csv' -f (Get-Date))
 $created = [System.Collections.Generic.List[object]]::new()
