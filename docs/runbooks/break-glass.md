@@ -12,6 +12,12 @@ Only when normal admin access is impossible, for example:
 
 **Not** for routine admin work. Every use is an incident.
 
+## Handling the credentials
+
+- The password is shown once at creation. Store it in the password manager (or offline, split) **before** pressing Enter.
+- **Never screenshot, paste or send a break-glass password.** Capture evidence only after the screen has cleared.
+- If a password is ever exposed, treat it as compromised: reset it the same day and record it in `registers/incident-log.md` (see INC-001).
+
 ## How to sign in
 
 1. Get the password from offline storage (two-person rule if possible).

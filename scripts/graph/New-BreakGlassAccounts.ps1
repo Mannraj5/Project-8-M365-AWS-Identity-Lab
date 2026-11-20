@@ -64,4 +64,5 @@ foreach ($name in $AccountNames) {
     }
 }
 
-Write-Host "`nNext: sign in as each account, register a FIDO2 key or passkey, and create the sign-in alert (docs/runbooks/break-glass.md)."
+Write-Host "`nNext: sign in as each account and register a FIDO2 key or passkey. Then set up sign-in monitoring:"
+Write-Host "  an alert on P1 tenants, or the weekly sign-in log review on Entra ID Free (docs/runbooks/break-glass.md, EX-010)."
