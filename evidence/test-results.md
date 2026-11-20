@@ -18,13 +18,13 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | Phase | Tests | Pass | Fail | Blocked | Not run |
 |-------|------:|-----:|-----:|--------:|--------:|
 | 0 Preparation | 3 | 3 | 0 | 0 | 0 |
-| 1 Identity foundation | 4 | 1 | 0 | 1 | 2 |
+| 1 Identity foundation | 4 | 2 | 0 | 1 | 1 |
 | 2 Conditional Access | 7 | 0 | 0 | 7 | 0 |
 | 3 Privileged access & lifecycle | 6 | 0 | 0 | 2 | 4 |
 | 4 Intune & Autopilot | 5 | 0 | 0 | 5 | 0 |
 | 5 Defender | 4 | 0 | 0 | 4 | 0 |
 | 6 AWS workforce access | 6 | 0 | 0 | 0 | 6 |
-| **Total** | **35** | **4** | **0** | **19** | **12** |
+| **Total** | **35** | **5** | **0** | **19** | **11** |
 
 ## Test register
 
@@ -35,7 +35,7 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | T0.3 | 0 | `scripts/graph/Test-LabPrereqs.ps1 -Connect` | All rows PASS | 2026-11-20 | PowerShell 7.7.0, Graph SDK 2.41.2, AWS CLI 2.38.5 and Connect-MgGraph (setup.admin, lab tenant) all PASS. Sign-in uses browser auth (`Set-MgGraphOption -DisableLoginByWAM $true`) because the Windows broker could not use the browser-stored passkey | Pass | `screenshots/T0.3-prereqs.png`, `screenshots/T0.3-prereqs-connect.png` |
 | T1.1 | 1 | `New-LabUsers.ps1` then `New-LabGroups.ps1 -FreeTier` | 8 users; each in SG-All-Staff and the right SG-Dept-* group; devs in SG-AWS-Developers | 2026-11-20 | 8 users created (New-LabUsers.ps1). New-LabGroups.ps1 -FreeTier created 8 groups. Independent check from the tenant: SG-All-Staff 8; Dept-Advice priya, tom; Dept-Finance jack, mei; Dept-Dev ella, sam; AWS-Developers ella, sam; AWS-ReadOnly alex; Admins-PIM 0; BreakGlass 0. Management/IT staff are in SG-All-Staff only, as designed | Pass | `screenshots/T1.1-groups.png` |
 | T1.2 | 1 | Users licensed through SG-All-Staff | Each staff user shows the licence as "Inherited" | 2026-11-20 | EX-004: Entra ID Free has no licences to assign | Blocked | |
-| T1.3 | 1 | Sign in as a break-glass account; find it in the sign-in log (EX-010: no automated alert on Free) | Sign-in appears in the sign-in log and is reviewed within the weekly window | | | Not run | |
+| T1.3 | 1 | Sign in as a break-glass account; find it in the sign-in log (EX-010: no automated alert on Free) | Sign-in appears in the sign-in log and is reviewed within the weekly window | 2026-11-20 | Sign-in log filtered on bg-emergency (last 24 h): both accounts visible, Success after MFA/passkey setup (Interrupted rows = registration). One Failure for bg-emergency-02 at 10:35:12Z investigated: error 50133, session invalid after password change, same location/IP as the successful sign-ins, so benign and caused by the INC-001 rotation. Recorded as review REV-001 | Pass | `screenshots/T1.3-breakglass-signins.png` |
 | T1.4 | 1 | Security Defaults **on** (Free tier, EX-005); every user prompted to register MFA | Settings screenshot | | | Not run | |
 | T2.1 | 2 | CA001: staff user signs in from a new browser | MFA prompt; sign-in log shows CA001 "Success" | 2026-11-20 | EX-005: Conditional Access needs Entra ID P1 | Blocked | |
 | T2.2 | 2 | CA002: legacy auth attempt (e.g. SMTP AUTH / basic auth client) | Sign-in log "Failure", CA002 applied | 2026-11-20 | EX-005: Conditional Access needs Entra ID P1 | Blocked | |
