@@ -3,6 +3,8 @@
 Build, secure, test and document a small Microsoft 365 and AWS identity
 environment for a fictional regulated firm, with evidence an auditor would accept.
 
+🎥 **[Watch the 5-minute walkthrough](https://youtu.be/1neV9dMgYdk)** · 📊 [Slides](docs/Project8-Identity-Lab-walkthrough.pptx) · 📄 [Executive summary](docs/executive-summary.md)
+
 > **Status: built and tested, on Microsoft Entra ID Free + AWS.** 16 tests passed,
 > 19 blocked by licensing (each with an exception and compensating control), 0 outstanding.
 > Start with the [executive summary](docs/executive-summary.md), then the
@@ -86,7 +88,7 @@ Full design: [`docs/as-built.md`](docs/as-built.md).
 | 4 | Intune and Autopilot | VM ready; not deployable without licence (EX-009) |
 | 5 | Microsoft Defender | Not deployable without licence (EX-009) |
 | 6 | AWS workforce access | Done: Organizations (Dev/Prod), Identity Center federated with Entra (SAML + SCIM), least-privilege permission sets, org CloudTrail, legacy IAM user retired |
-| 7 | Documentation and publishing | Documents done (as-built, Essential Eight, executive summary); video and publishing to do |
+| 7 | Documentation and publishing | Documents, slides and [video](https://youtu.be/1neV9dMgYdk) done; publishing to do |
 
 Tests: **16 passed, 19 blocked by licensing (each with an exception and compensating control), 0 to run** ([`evidence/test-results.md`](evidence/test-results.md)).
 

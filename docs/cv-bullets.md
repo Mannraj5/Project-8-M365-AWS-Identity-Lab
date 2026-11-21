@@ -1,5 +1,7 @@
 # CV and LinkedIn bullets
 
+Video walkthrough: https://youtu.be/1neV9dMgYdk
+
 Numbers come from `evidence/test-results.md`. Each claim has evidence in this repo.
 
 ## CV (choose 3 or 4)
