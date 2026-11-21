@@ -23,8 +23,8 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | 3 Privileged access & lifecycle | 6 | 4 | 0 | 2 | 0 |
 | 4 Intune & Autopilot | 5 | 0 | 0 | 5 | 0 |
 | 5 Defender | 4 | 0 | 0 | 4 | 0 |
-| 6 AWS workforce access | 6 | 1 | 0 | 0 | 5 |
-| **Total** | **35** | **11** | **0** | **19** | **5** |
+| 6 AWS workforce access | 6 | 2 | 0 | 0 | 4 |
+| **Total** | **35** | **12** | **0** | **19** | **4** |
 
 ## Test register
 
@@ -61,7 +61,7 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | T5.4 | 5 | ASR rules (block mode) | Test triggers an ASR block event | 2026-11-20 | EX-009: Defender for Endpoint licence not available card-free | Blocked | |
 | T6.1 | 6 | `scripts/aws/check-account-baseline.sh` (before Phase 6 step 7) | Root MFA, no root keys, budget exists, org trail logging | 2026-10-25 | Early checks in console: root MFA = passkey, root access keys = 0, $5 monthly budget created, alert email verified. Org trail and script run wait for Phase 6 | Not run | `screenshots/T6.1-root-mfa.png` |
 | T6.2 | 6 | Developer signs in through Entra (My Apps → AWS) | Lands in AWS access portal; Dev = Developer, Prod = ReadOnly | 2026-11-21 | sam.okafor signed in at myapps.microsoft.com with his Entra account (Security Defaults MFA), opened the AWS IAM Identity Center tile and landed in the AWS access portal with no AWS password (SAML). Portal shows harbourline-dev → Developer and harbourline-prod → ReadOnly | Pass | `screenshots/T6.2-sso-access-portal-sam.png` |
-| T6.3 | 6 | Developer tries to create an S3 bucket in Prod | AccessDenied | | | Not run | |
+| T6.3 | 6 | Developer tries to create an S3 bucket in Prod | AccessDenied | 2026-11-21 | Same user (sam.okafor), same action (S3 CreateBucket, Sydney): harbourline-prod as ReadOnly → 'Failed to create bucket… s3:CreateBucket permission is required'; harbourline-dev as Developer → bucket created (then deleted) | Pass | `screenshots/T6.3-prod-readonly-denied.png`, `screenshots/T6.3-dev-developer-allowed.png` |
 | T6.4 | 6 | Remove developer from SG-AWS-Developers | After next SCIM cycle, no AWS access | | | Not run | |
 | T6.5 | 6 | `scripts/aws/find-signin-events.sh` | CloudTrail shows the Identity Center sign-in | | | Not run | |
 | T6.6 | 6 | Legacy IAM user retired (`retire-legacy-iam-user.sh`) | Credential report shows no IAM users | | | Not run | |
