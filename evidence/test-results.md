@@ -23,8 +23,8 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | 3 Privileged access & lifecycle | 6 | 4 | 0 | 2 | 0 |
 | 4 Intune & Autopilot | 5 | 0 | 0 | 5 | 0 |
 | 5 Defender | 4 | 0 | 0 | 4 | 0 |
-| 6 AWS workforce access | 6 | 4 | 0 | 0 | 2 |
-| **Total** | **35** | **14** | **0** | **19** | **2** |
+| 6 AWS workforce access | 6 | 5 | 0 | 0 | 1 |
+| **Total** | **35** | **15** | **0** | **19** | **1** |
 
 ## Test register
 
@@ -64,7 +64,7 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | T6.3 | 6 | Developer tries to create an S3 bucket in Prod | AccessDenied | 2026-11-21 | Same user (sam.okafor), same action (S3 CreateBucket, Sydney): harbourline-prod as ReadOnly → 'Failed to create bucket… s3:CreateBucket permission is required'; harbourline-dev as Developer → bucket created (then deleted) | Pass | `screenshots/T6.3-prod-readonly-denied.png`, `screenshots/T6.3-dev-developer-allowed.png` |
 | T6.4 | 6 | Remove a developer's access in Entra (Free tier: unassign the user from the AWS app, EX-011) | After next SCIM cycle, no AWS access | 2026-11-21 | ella.ruiz unassigned from the AWS IAM Identity Center app in Entra; Provision on demand sent active=false straight away (no 40-minute wait); Identity Center shows Ella Disabled while sam and alex stay Enabled | Pass | `screenshots/T6.4-1-app-assignment-removed.png` to `T6.4-4-aws-user-disabled.png` |
 | T6.5 | 6 | CloudTrail shows the Identity Center (SSO) sign-in | CloudTrail shows the Identity Center sign-in | 2026-11-21 | Event history, source sso.amazonaws.com: Authenticate (17:27:11) and Federate (17:28:10, 17:35:42) for the developer's sessions. Federate record: userIdentity.type = IdentityCenterUser, serviceEventDetails.role_name = ReadOnly, account = harbourline-prod, region ap-southeast-2. Admin actions (CreateAccountAssignment by root) also logged. Org trail harbourline-org-trail now Logging for all accounts | Pass | `screenshots/T6.5-cloudtrail-federate-event.png`, `screenshots/T6-cloudtrail-org-trail-logging.png` |
-| T6.6 | 6 | Legacy IAM user retired (`retire-legacy-iam-user.sh`) | Credential report shows no IAM users | | | Not run | |
+| T6.6 | 6 | Legacy IAM user retired (`retire-legacy-iam-user.sh`) | Credential report shows no IAM users | 2026-11-21 | Legacy user legacy-reporting-svc (active, never-used access key) found in the credential report, key deactivated, key deleted, user deleted. IAM users = 0; report also shows root MFA on and no root keys | Pass | `T6.6-legacy-iam-user-retirement.md`, `screenshots/T6.6-*.png` |
 
 ## Detailed records
 
