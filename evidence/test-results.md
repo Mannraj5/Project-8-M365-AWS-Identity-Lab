@@ -23,8 +23,8 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | 3 Privileged access & lifecycle | 6 | 4 | 0 | 2 | 0 |
 | 4 Intune & Autopilot | 5 | 0 | 0 | 5 | 0 |
 | 5 Defender | 4 | 0 | 0 | 4 | 0 |
-| 6 AWS workforce access | 6 | 2 | 0 | 0 | 4 |
-| **Total** | **35** | **12** | **0** | **19** | **4** |
+| 6 AWS workforce access | 6 | 3 | 0 | 0 | 3 |
+| **Total** | **35** | **13** | **0** | **19** | **3** |
 
 ## Test register
 
@@ -62,7 +62,7 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | T6.1 | 6 | `scripts/aws/check-account-baseline.sh` (before Phase 6 step 7) | Root MFA, no root keys, budget exists, org trail logging | 2026-10-25 | Early checks in console: root MFA = passkey, root access keys = 0, $5 monthly budget created, alert email verified. Org trail and script run wait for Phase 6 | Not run | `screenshots/T6.1-root-mfa.png` |
 | T6.2 | 6 | Developer signs in through Entra (My Apps → AWS) | Lands in AWS access portal; Dev = Developer, Prod = ReadOnly | 2026-11-21 | sam.okafor signed in at myapps.microsoft.com with his Entra account (Security Defaults MFA), opened the AWS IAM Identity Center tile and landed in the AWS access portal with no AWS password (SAML). Portal shows harbourline-dev → Developer and harbourline-prod → ReadOnly | Pass | `screenshots/T6.2-sso-access-portal-sam.png` |
 | T6.3 | 6 | Developer tries to create an S3 bucket in Prod | AccessDenied | 2026-11-21 | Same user (sam.okafor), same action (S3 CreateBucket, Sydney): harbourline-prod as ReadOnly → 'Failed to create bucket… s3:CreateBucket permission is required'; harbourline-dev as Developer → bucket created (then deleted) | Pass | `screenshots/T6.3-prod-readonly-denied.png`, `screenshots/T6.3-dev-developer-allowed.png` |
-| T6.4 | 6 | Remove developer from SG-AWS-Developers | After next SCIM cycle, no AWS access | | | Not run | |
+| T6.4 | 6 | Remove a developer's access in Entra (Free tier: unassign the user from the AWS app, EX-011) | After next SCIM cycle, no AWS access | 2026-11-21 | ella.ruiz unassigned from the AWS IAM Identity Center app in Entra; Provision on demand sent active=false straight away (no 40-minute wait); Identity Center shows Ella Disabled while sam and alex stay Enabled | Pass | `screenshots/T6.4-1-app-assignment-removed.png` to `T6.4-4-aws-user-disabled.png` |
 | T6.5 | 6 | `scripts/aws/find-signin-events.sh` | CloudTrail shows the Identity Center sign-in | | | Not run | |
 | T6.6 | 6 | Legacy IAM user retired (`retire-legacy-iam-user.sh`) | Credential report shows no IAM users | | | Not run | |
 
