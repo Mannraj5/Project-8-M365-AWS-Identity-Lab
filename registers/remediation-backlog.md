@@ -13,6 +13,7 @@ findings and your own testing. Priority: **P1** fix now Â· **P2** this quarter Â
 | RB-007 | Own finding (tenant defaults) | Non-admin users can create new tenants (shadow IT) | P2 | S | User settings: *Restrict non-admin users from creating tenants* = Yes | Owner | **Fixed 2026-11-21** (`evidence/screenshots/RB-003-009-user-settings-hardened.png`) |
 | RB-008 | Own finding (tenant defaults) | Users can create security groups (group sprawl undermines the access design) | P2 | S | User settings: *Users can create security groups* = No | Owner | **Fixed 2026-11-21** (`evidence/screenshots/RB-003-009-user-settings-hardened.png`) |
 | RB-009 | Own finding (tenant defaults) | Work accounts can be connected to LinkedIn (profile data sharing) | P3 | S | User settings: *LinkedIn account connections* = No | Owner | **Fixed 2026-11-21** (`evidence/screenshots/RB-003-009-user-settings-hardened.png`) |
+| RB-010 | Own finding (AWS) | Management account uses the default IAM password policy (8 characters) | P3 | S | IAM > Account settings > Password policy: 14+ characters, all character types, prevent reuse. Defence in depth only: the design has no IAM users | Owner | Open |
 | RB-005 | Secure Score | *Fill in after review* | | | | | |
 
 ## Secure Score snapshot
