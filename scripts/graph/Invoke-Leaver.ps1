@@ -1,5 +1,5 @@
 #Requires -Version 7.2
-#Requires -Modules Microsoft.Graph.Authentication, Microsoft.Graph.Users, Microsoft.Graph.Users.Actions, Microsoft.Graph.Groups, Microsoft.Graph.DeviceManagement.Actions
+#Requires -Modules Microsoft.Graph.Authentication, Microsoft.Graph.Users, Microsoft.Graph.Users.Actions, Microsoft.Graph.Groups
 <#
 .SYNOPSIS
 Phase 3: leaver process for one user. Blocks sign-in, revokes sessions, removes
@@ -37,6 +37,8 @@ $scopes = @(
     'RoleManagement.ReadWrite.Directory', 'LicenseAssignment.ReadWrite.All'
 )
 if ($RetireDevices) {
+    # Loaded only when needed: tenants without Intune never use it.
+    Import-Module Microsoft.Graph.DeviceManagement -ErrorAction Stop
     $scopes += 'DeviceManagementManagedDevices.Read.All', 'DeviceManagementManagedDevices.PrivilegedOperations.All'
 }
 # The tenant is the one that owns the leaver's UPN domain.

@@ -17,6 +17,26 @@ jobs:
           $all | Format-Table RuleName, Severity, ScriptName, Line, Message -AutoSize -Wrap
           if ($all | Where-Object Severity -in 'Error', 'ParseError') { exit 1 }
 
+  required-modules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # A misspelled or non-existent module in '#Requires -Modules' stops a script
+      # before it runs, and mocked tests cannot see it. Check every name exists.
+      - name: Modules named in #Requires exist in the PowerShell Gallery
+        shell: pwsh
+        run: |
+          $names = Get-ChildItem scripts -Recurse -Filter *.ps1 |
+            Select-String -Pattern '^#Requires -Modules (.+)$' |
+            ForEach-Object { $_.Matches[0].Groups[1].Value -split ',' } |
+            ForEach-Object { $_.Trim() } | Sort-Object -Unique
+          $missing = @()
+          foreach ($n in $names) {
+            if (Find-Module -Name $n -Repository PSGallery -ErrorAction SilentlyContinue) { "ok       $n" }
+            else { "MISSING  $n"; $missing += $n }
+          }
+          if ($missing) { Write-Error "Modules not found: $($missing -join ', ')"; exit 1 }
+
   shell:
     runs-on: ubuntu-latest
     steps:
