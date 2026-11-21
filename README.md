@@ -3,8 +3,25 @@
 Build, secure, test and document a small Microsoft 365 and AWS identity
 environment for a fictional regulated firm, with evidence an auditor would accept.
 
-> **Status: Phase 1 (identity foundation), on Microsoft Entra ID Free.** Results
-> are filled in from `evidence/test-results.md` as each phase passes.
+> **Status: built and tested, on Microsoft Entra ID Free + AWS.** 16 tests passed,
+> 19 blocked by licensing (each with an exception and compensating control), 0 outstanding.
+> Start with the [executive summary](docs/executive-summary.md), then the
+> [as-built](docs/as-built.md).
+
+## Results at a glance
+
+- **One identity, two clouds:** developers sign in to AWS with their Entra ID account
+  (SAML), and their AWS identity is created and disabled from Entra (SCIM). There are
+  0 IAM users and no long-lived human credentials.
+- **Least privilege, proven:** the same user can build in Dev but is denied in Prod and
+  outside Sydney; staff hold no standing admin roles, and a just-in-time role grant
+  was tested end to end with an audit trail.
+- **Lifecycle:** joiner, mover and leaver scripted and tested; a leaver is locked out on
+  the next sign-in, and AWS access is removed within seconds.
+- **Hardened tenant:** 6 risky Entra defaults found during testing and fixed; break-glass
+  accounts on device-bound passkeys with weekly sign-in review.
+- **Honest scope:** Conditional Access, PIM and device controls are fully designed and
+  scripted but need paid licences; see the [Essential Eight self-assessment](docs/essential-eight-assessment.md).
 
 ## Licensing: a deliberate constraint
 
@@ -68,7 +85,7 @@ Full design: [`docs/as-built.md`](docs/as-built.md).
 | 4 | Intune and Autopilot | VM ready; not deployable without licence (EX-009) |
 | 5 | Microsoft Defender | Not deployable without licence (EX-009) |
 | 6 | AWS workforce access | Done: Organizations (Dev/Prod), Identity Center federated with Entra (SAML + SCIM), least-privilege permission sets, org CloudTrail, legacy IAM user retired |
-| 7 | Documentation and publishing | Not started |
+| 7 | Documentation and publishing | Documents done (as-built, Essential Eight, executive summary); video and publishing to do |
 
 Tests: **16 passed, 19 blocked by licensing (each with an exception and compensating control), 0 to run** ([`evidence/test-results.md`](evidence/test-results.md)).
 
@@ -90,8 +107,8 @@ scripts/aws/                   AWS CLI v2 checks (bash)
 ## How to reproduce
 
 **Prerequisites:** PowerShell 7.2+, `Install-Module Microsoft.Graph -Scope CurrentUser`,
-AWS CLI v2, `jq`, a Windows 11 Enterprise evaluation VM, a Microsoft 365 E5 trial
-and a new AWS account. Every script that changes something supports `-WhatIf`;
+AWS CLI v2, `jq`, a Windows 11 Enterprise evaluation VM, a Microsoft Entra tenant
+(Free works; P1/P2 for Conditional Access and PIM) and a new AWS account. Every script that changes something supports `-WhatIf`;
 run that first.
 
 ```powershell
@@ -132,7 +149,7 @@ documented in the build guide and recorded in the as-built.
 - Redact tenant IDs, domains, emails, IPs, account IDs and keys before committing.
   `out/` (passwords, logs) is git-ignored.
 - AWS budget alert from day one; delete resources when finished.
-- Cancel the Microsoft trial before it converts to paid.
+- Never start a paid trial that needs a card without turning off auto-renew on day 1.
 
 ## Out of scope
 

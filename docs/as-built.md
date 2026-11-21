@@ -1,135 +1,172 @@
 # As-built: Harbourline Advisory identity environment
 
-> Fill in as you build. Fields marked `TBD` are recorded on the day; never paste
-> tenant IDs, account IDs or real email addresses here.
-
 | | |
 |---|---|
 | Document owner | Manraj Singh Makin |
-| Version | 0.1 (draft, pre-build) |
-| Last updated | 2026-10-25 |
-| Tenant | `TBD`.onmicrosoft.com (Microsoft 365 E5 trial, activated `TBD`, expires `TBD`) |
-| AWS organisation | Management + Dev + Prod (`ap-southeast-2`) |
-| Licensing | **Microsoft Entra ID Free** (card-free by design, EX-004). Sections 4–7 describe the P1/P2 target design; what is actually deployed is marked **Deployed** or **Design only** |
+| Version | 1.0 (as built and tested) |
+| Last updated | 2026-11-21 |
+| Identity tenant | `<tenant>.onmicrosoft.com`, display name **Harbourline Advisory**, country Australia, **Microsoft Entra ID Free** |
+| AWS organisation | Management + `harbourline-dev` + `harbourline-prod`, home Region `ap-southeast-2` (Sydney) |
+| Test results | 16 passed, 19 blocked by licensing (each with an exception), 0 outstanding: [`evidence/test-results.md`](../evidence/test-results.md) |
+
+Identifiers (tenant ID, domain, AWS account IDs, IP addresses, key IDs) are redacted
+throughout. Each section says whether it is **Deployed** (built and tested) or
+**Design only** (written and ready for a licensed tenant, see EX-004).
 
 ## 1. Architecture
 
-Entra ID is the single identity source; everything else trusts it.
+### As deployed
+
+Entra ID is the single identity source. AWS trusts it for sign-in (SAML) and
+receives users from it (SCIM). No human has a long-lived AWS credential.
 
 ```mermaid
 flowchart LR
-    U[Staff and admins] -->|sign-in| E[Microsoft Entra ID]
-    E -->|Conditional Access<br/>CA001-CA006| M[Microsoft 365 apps]
-    E -->|device identity| I[Intune]
-    I -->|compliance state| E
-    I -->|onboarding| D[Defender for Endpoint]
-    E -->|SAML sign-in| IC[AWS IAM Identity Center]
-    E -->|SCIM users + groups| IC
-    IC -->|permission sets| DEV[AWS Dev account]
-    IC -->|permission sets| PROD[AWS Prod account]
-    CT[Organisation CloudTrail] -.logs.-> DEV & PROD
+    U[Staff and admins] -->|password + MFA<br/>Security Defaults| E[Microsoft Entra ID<br/>Free]
+    BG[Break-glass x2<br/>device-bound passkeys] --> E
+    E -->|SAML sign-in| IC[AWS IAM Identity Center<br/>Sydney, single Region]
+    E -->|SCIM users| IC
+    IC -->|Developer| DEV[harbourline-dev]
+    IC -->|ReadOnly| PROD[harbourline-prod]
+    IC -->|ReadOnly| DEV
+    CT[Org CloudTrail<br/>all accounts, all Regions] -.audit.-> MGMT[Management account]
+    CT -.audit.-> DEV
+    CT -.audit.-> PROD
 ```
 
-## 2. Identities
+### Target design (needs Entra ID P1/P2, Intune, Defender)
 
-| Persona | UPN prefix | Department | Standing roles | Eligible (PIM) |
-|---------|------------|------------|----------------|----------------|
-| Owner | olivia.owner | Management | none | none (approver for GA) |
-| IT Administrator | alex.admin | IT | none | Global Admin, Intune Admin, Security Admin, User Admin |
-| Staff ×6 | see `data/users.csv` | Advice / Finance / Development | none | none |
-| Break-glass ×2 | bg-emergency-01/02 | - | Global Admin (permanent) | - |
+Adds Conditional Access CA001 to CA006, PIM, Intune/Autopilot device compliance and
+Defender for Endpoint. See sections 4 to 7 and the exception register.
 
-## 3. Groups
+## 2. Identities (Deployed)
+
+| Persona | Account | Department | Standing admin role | Notes |
+|---------|---------|------------|---------------------|-------|
+| Owner | olivia.owner | Management | none | Business approver |
+| IT Administrator | alex.admin | IT | **none** | Gets a role only for a task, removed afterwards (tested, T3.1) |
+| Staff ×6 | see `data/users.csv` | Advice, Finance, Development | none | Created by `New-LabUsers.ps1` |
+| Leaver test | nina.patel | Advice (was Finance) | none | **Disabled**: joiner, mover, leaver tested (T3.4 to T3.6) |
+| Break-glass ×2 | bg-emergency-01, -02 | none | Global Administrator (permanent) | Device-bound passkey + Authenticator, 40+ character passwords, weekly sign-in review |
+| Build account | setup.admin | none | Global Administrator | To be removed after the build (RB-004) |
+
+**Authentication:** Security Defaults **on**. Every user must register Microsoft
+Authenticator and is prompted for MFA; admins every time (T1.4). Legacy
+authentication is blocked by Security Defaults.
+
+## 3. Groups (Deployed as assigned groups)
 
 Source of truth: `config/groups.json`.
 
-| Group | Type | Rule / purpose |
-|-------|------|----------------|
-| SG-All-Staff | Dynamic | Enabled member users with a known department. Carries the licence; CA004 target |
-| SG-Dept-Advice / -Finance / -Dev | Dynamic | `user.department` |
-| SG-Admins-PIM | Assigned, role-assignable | Eligible admin roles |
-| SG-BreakGlass | Assigned, role-assignable | Excluded from all CA. Role-assignable so only Privileged Role Admins / GAs can change membership |
-| SG-AWS-Developers / SG-AWS-ReadOnly | Assigned | Provisioned to AWS by SCIM |
+| Group | Members (deployed) | Purpose |
+|-------|--------------------|---------|
+| SG-All-Staff | all enabled staff with a department | Licence target and CA004 scope in the target design |
+| SG-Dept-Advice / -Finance / -Dev | by `department` | Department access |
+| SG-AWS-Developers / SG-AWS-ReadOnly | sam, ella / alex | Record of AWS entitlement (see EX-011) |
+| SG-BreakGlass | bg-emergency-01, -02 | Exclusion group for Conditional Access in the target design |
+| SG-Admins-PIM | empty | PIM eligibility in the target design |
 
-**Design note:** licences come from SG-All-Staff, which requires
-`accountEnabled = true`. A leaver loses the licence automatically once disabled.
-
-**Deployed on Free:** all eight groups exist as *assigned* groups.
+On Entra ID Free, dynamic and role-assignable groups are unavailable.
 `New-LabGroups.ps1 -FreeTier` reproduces the dynamic rules from the department
-attribute and must be re-run after a joiner, mover or leaver (EX-006). SG-BreakGlass
-and SG-Admins-PIM are ordinary groups (EX-007). No licensing (EX-004).
+attribute (adds **and** removes members) and is run after every joiner, mover or
+leaver (EX-006, EX-007). Membership verified independently from the tenant (T1.1).
 
-## 4. Conditional Access (Design only on Free – EX-005; Security Defaults ON instead)
+## 4. Conditional Access (Design only: EX-005)
 
-Source of truth: `config/conditional-access/` (templates) and `config/conditional-access/exported/` (as deployed).
+Policies are kept as Graph JSON in `config/conditional-access/` and deploy with
+`New-LabCAPolicies.ps1` (always report-only first; refuses any policy that does not
+exclude SG-BreakGlass). CI fails the build if a policy loses the break-glass exclusion.
 
-| ID | Purpose | Users | Apps | Condition | Control | State |
-|----|---------|-------|------|-----------|---------|-------|
-| CA001 | MFA everywhere | All − SG-BreakGlass | All | - | MFA | TBD |
-| CA002 | Kill legacy auth (can't do MFA) | All − SG-BreakGlass | All | Client apps: EAS, other | Block | TBD |
-| CA003 | Phishing-resistant MFA for admins | 15 admin roles (Microsoft's recommended 14 + Intune Admin) − SG-BreakGlass | All | - | Auth strength: phishing-resistant | TBD |
-| CA004 | Only managed, healthy devices reach M365 data | SG-All-Staff − SG-BreakGlass | Office 365 | - | Compliant device | TBD |
-| CA005 | Stop risky sign-ins (P2) | All − SG-BreakGlass | All | Sign-in risk: high | Block | TBD |
-| CA006 | Geo-restrict to Australia | All − SG-BreakGlass | All | Location ≠ NL-Australia | Block | TBD |
+| ID | Purpose | Users | Apps | Condition | Control |
+|----|---------|-------|------|-----------|---------|
+| CA001 | MFA everywhere | All − SG-BreakGlass | All | - | MFA |
+| CA002 | Block legacy authentication | All − SG-BreakGlass | All | Client apps: EAS, other | Block |
+| CA003 | Phishing-resistant MFA for admins | 15 admin roles − SG-BreakGlass | All | - | Auth strength: phishing-resistant |
+| CA004 | Managed, healthy devices only | SG-All-Staff − SG-BreakGlass | Office 365 | - | Compliant device |
+| CA005 | Block risky sign-ins (P2) | All − SG-BreakGlass | All | Sign-in risk: high | Block |
+| CA006 | Australia only | All − SG-BreakGlass | All | Location ≠ NL-Australia | Block |
 
-Deployment: report-only first (`New-LabCAPolicies.ps1`), review sign-in logs, then
-`Set-LabCAPolicyState.ps1 -State enabled`.
+**Compensating control on Free:** Security Defaults (covers CA001, CA002 and part of CA003).
 
-## 5. Privileged access (PIM) (Design only on Free – EX-008)
+## 5. Privileged access (Deployed: manual just-in-time; PIM design only, EX-008)
 
-See `runbooks/pim-activation.md` for role settings. Access review: quarterly on
-SG-Admins-PIM, reviewer = Owner, auto-remove on no response: `TBD`.
+| Control | State |
+|---------|-------|
+| Standing admin roles for staff | **None** |
+| Admin task | Least-privileged role (for example User Administrator, not Global Administrator) assigned for the task and removed straight after. Tested: granted 1:06, used 1:10, removed 1:16, all in the audit log (T3.1) |
+| Break-glass | Two cloud-only Global Administrators, device-bound passkeys, sign-ins reviewed weekly (REV-001) |
+| PIM, access reviews | Design only: settings in `docs/runbooks/pim-activation.md` |
 
-## 6. Devices (Intune) (Design only – EX-009)
+## 6. Tenant hardening (Deployed)
 
-| Item | Setting |
-|------|---------|
-| Autopilot profile | User-driven, Entra joined, ESP on |
-| Compliance policy | BitLocker, Secure Boot, firewall, Defender AV, min OS `TBD` |
-| Security baseline | Windows security baseline `TBD version` |
-| Windows LAPS | Backup to Entra ID, rotation `TBD` days |
-| Office macros | Block macros from the internet |
-| App Control for Business | Audit `TBD date` → Enforce `TBD date` |
-| Update rings | `TBD` |
+Defaults changed after findings during testing (remediation backlog):
 
-## 7. Defender for Endpoint (Design only – EX-009)
+| Setting | Value | Ref |
+|---------|-------|-----|
+| Guest invitations | Only users in specific admin roles | RB-002 |
+| Microsoft Entra admin center for non-admins | Restricted (403 verified) | RB-003 |
+| Users can register applications / agent blueprints | No | RB-006 |
+| Non-admin users can create tenants | No | RB-007 |
+| Users can create security groups | No | RB-008 |
+| LinkedIn account connections | No | RB-009 |
+| Guest user access | Limited (default kept) | |
 
-Onboarded via Intune EDR policy. ASR rules: `TBD list` (audit → block). Network protection: block. Web content filtering categories blocked: `TBD`.
+## 7. Devices and Defender (Design only: EX-009)
 
-## 8. AWS
+Windows 11 Enterprise VM `HL-WIN11-01` is built (TPM 2.0, Secure Boot, Autopilot-ready
+serial, clean snapshot, T0.2). Intune, Autopilot, compliance, LAPS, App Control and
+Defender for Endpoint are documented in the runbooks but not deployed (no licence).
+
+## 8. AWS (Deployed)
+
+### Accounts
 
 | Account | Purpose |
 |---------|---------|
 | Management | Organizations, IAM Identity Center, org CloudTrail, billing. No workloads |
-| Dev | Developer workloads |
-| Prod | Production (lab: empty) |
+| harbourline-dev | Developer workloads |
+| harbourline-prod | Production (lab: empty) |
 
-**Permission sets** (`config/aws/permission-sets/`):
+Member accounts were created without root passwords, and **centralised root access**
+is enabled (root credentials management and privileged root actions), so root-only
+tasks run from the management account.
 
-| Set | Policy | Assigned to | Session |
-|-----|--------|-------------|---------|
-| ReadOnly | AWS `ViewOnlyAccess` | SG-AWS-ReadOnly → Dev, Prod; SG-AWS-Developers → Prod | 4 h |
-| Developer | Inline, Sydney-only, no IAM users/keys/roles, no trail tampering | SG-AWS-Developers → Dev | 4 h |
-| Admin | `AdministratorAccess` | Nobody (temporary, approved, logged) | 1 h |
+### IAM Identity Center
 
-Optional guardrail SCP: `config/aws/scp-guardrails.json` (region lock, trail protection, no leaving the org).
+- Organisation instance, **single Region (ap-southeast-2)**, **AWS owned key**. The
+  console default (multi-Region replicated to US West, customer managed KMS key) was
+  rejected for data residency and cost.
+- Identity source: **external IdP = Microsoft Entra ID (SAML 2.0)**. Users cannot be
+  created in AWS any more; Entra is the source of truth.
+- **SCIM** automatic provisioning, scope *assigned users only*, failure emails on.
+  Users are assigned to the AWS app individually (EX-011: group assignment needs P1).
 
-SCIM: Entra enterprise app "AWS IAM Identity Center", scope = assigned users and groups, cycle ≈ 40 min.
+### Permission sets and assignments
 
-**IAM Identity Center instance (decided 2026-11-21):** organisation instance, **single-Region (ap-southeast-2)**,
-encrypted with an **AWS owned key**. Rejected the console default (multi-Region, replicated to US West (Oregon),
-customer managed KMS key) for two reasons: data residency (identity data stays in Australia) and cost (no KMS key
-charges). Evidence: `evidence/screenshots/T6-identity-center-single-region.png`.
+| Set | Policy | Session | harbourline-dev | harbourline-prod |
+|-----|--------|---------|-----------------|------------------|
+| ReadOnly | AWS `ViewOnlyAccess` (no S3 object or secret reads) | 4 h | alex | sam, ella, alex |
+| Developer | Inline: build services **in Sydney only**, small EC2 types only, no IAM users/keys/roles, no CloudTrail changes | 4 h | sam, ella | - |
+| Admin | `AdministratorAccess` | 1 h | nobody | nobody |
 
-**Member account root users:** centralised root access is enabled (root credentials management and privileged
-root actions); member accounts have no root credentials, and root-only tasks run from the management account.
+Tested: SSO through Entra (T6.2); the same user can create an S3 bucket in Dev but is
+denied in Prod (T6.3) and denied outside Sydney; unassigning a user in Entra disables
+them in AWS within seconds (T6.4).
 
-**Entra ID Free limits (EX-011):** SCIM provisions **users only**; group provisioning needs P1, so permission sets
-are assigned to users directly, not to SG-AWS-* groups.
+### Logging and cost guardrails
+
+| Control | Setting |
+|---------|---------|
+| Org CloudTrail `harbourline-org-trail` | All accounts, all Regions, management events (read + write), log file validation on, SSE-S3 (no KMS cost), no CloudWatch Logs; logging verified (T6.1, T6.5) |
+| Budget | `lab-monthly-cost`, US$5/month, email alerts verified |
+| Root (management) | Passkey MFA, no access keys |
+| IAM users | **0**: the stand-in legacy user was found in the credential report, deactivated and deleted (T6.6) |
+| SCP guardrails | Written (`config/aws/scp-guardrails.json`), **not yet attached** (RB-011) |
 
 ## 9. Change log
 
 | Date | Change | By |
 |------|--------|----|
-| 2026-10-25 | Initial design | MSM |
-| 2026-11-20 | Tenant on Entra ID Free; `-FreeTier` group sync; exceptions EX-004 to EX-011 | MSM |
+| 2026-10-25 | Initial design, scripts and test plan | MSM |
+| 2026-11-20 | Tenant on Entra ID Free; `-FreeTier` group sync; exceptions EX-004 to EX-011; Phase 1 built | MSM |
+| 2026-11-21 | Tenant hardening; least-privilege and lifecycle tests; AWS Organizations, Identity Center federation, permission sets, org CloudTrail; legacy IAM user retired. Version 1.0 | MSM |
