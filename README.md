@@ -67,10 +67,10 @@ Full design: [`docs/as-built.md`](docs/as-built.md).
 | 3 | PIM and joiner-mover-leaver | Done: least privilege (manual just-in-time) and joiner/mover/leaver tested. PIM not deployable on Free (EX-008) |
 | 4 | Intune and Autopilot | VM ready; not deployable without licence (EX-009) |
 | 5 | Microsoft Defender | Not deployable without licence (EX-009) |
-| 6 | AWS workforce access | Not started |
+| 6 | AWS workforce access | Done: Organizations (Dev/Prod), Identity Center federated with Entra (SAML + SCIM), least-privilege permission sets, org CloudTrail, legacy IAM user retired |
 | 7 | Documentation and publishing | Not started |
 
-Tests: **15 passed, 19 blocked by licensing, 1 to run** ([`evidence/test-results.md`](evidence/test-results.md)).
+Tests: **16 passed, 19 blocked by licensing (each with an exception and compensating control), 0 to run** ([`evidence/test-results.md`](evidence/test-results.md)).
 
 ## Repository layout
 

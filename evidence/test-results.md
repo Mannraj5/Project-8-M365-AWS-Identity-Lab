@@ -23,8 +23,8 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | 3 Privileged access & lifecycle | 6 | 4 | 0 | 2 | 0 |
 | 4 Intune & Autopilot | 5 | 0 | 0 | 5 | 0 |
 | 5 Defender | 4 | 0 | 0 | 4 | 0 |
-| 6 AWS workforce access | 6 | 5 | 0 | 0 | 1 |
-| **Total** | **35** | **15** | **0** | **19** | **1** |
+| 6 AWS workforce access | 6 | 6 | 0 | 0 | 0 |
+| **Total** | **35** | **16** | **0** | **19** | **0** |
 
 ## Test register
 
@@ -59,7 +59,7 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | T5.2 | 5 | Detection test script + EICAR download | Alerts raised; incident note written | 2026-11-20 | EX-009: Defender for Endpoint licence not available card-free | Blocked | |
 | T5.3 | 5 | Web content filtering | Blocked category denied in browser | 2026-11-20 | EX-009: Defender for Endpoint licence not available card-free | Blocked | |
 | T5.4 | 5 | ASR rules (block mode) | Test triggers an ASR block event | 2026-11-20 | EX-009: Defender for Endpoint licence not available card-free | Blocked | |
-| T6.1 | 6 | `scripts/aws/check-account-baseline.sh` (before Phase 6 step 7) | Root MFA, no root keys, budget exists, org trail logging | 2026-10-25 | Early checks in console: root MFA = passkey, root access keys = 0, $5 monthly budget created, alert email verified. Org trail and script run wait for Phase 6 | Not run | `screenshots/T6.1-root-mfa.png` |
+| T6.1 | 6 | Management account baseline (AWS CLI in CloudShell; same checks as `scripts/aws/check-account-baseline.sh`) | Root MFA, no root keys, budget exists, org trail logging | 2026-11-21 | Root MFA enabled (1), root access keys 0, IAM users 0, budget lab-monthly-cost US$5 with verified alert email, org trail harbourline-org-trail (organization + multi-region) IsLogging = true | Pass | `screenshots/T6.1-cloudshell-baseline.png`, `screenshots/T6.1-root-mfa.png` |
 | T6.2 | 6 | Developer signs in through Entra (My Apps → AWS) | Lands in AWS access portal; Dev = Developer, Prod = ReadOnly | 2026-11-21 | sam.okafor signed in at myapps.microsoft.com with his Entra account (Security Defaults MFA), opened the AWS IAM Identity Center tile and landed in the AWS access portal with no AWS password (SAML). Portal shows harbourline-dev → Developer and harbourline-prod → ReadOnly | Pass | `screenshots/T6.2-sso-access-portal-sam.png` |
 | T6.3 | 6 | Developer tries to create an S3 bucket in Prod | AccessDenied | 2026-11-21 | Same user (sam.okafor), same action (S3 CreateBucket, Sydney): harbourline-prod as ReadOnly → 'Failed to create bucket… s3:CreateBucket permission is required'; harbourline-dev as Developer → bucket created (then deleted) | Pass | `screenshots/T6.3-prod-readonly-denied.png`, `screenshots/T6.3-dev-developer-allowed.png` |
 | T6.4 | 6 | Remove a developer's access in Entra (Free tier: unassign the user from the AWS app, EX-011) | After next SCIM cycle, no AWS access | 2026-11-21 | ella.ruiz unassigned from the AWS IAM Identity Center app in Entra; Provision on demand sent active=false straight away (no 40-minute wait); Identity Center shows Ella Disabled while sam and alex stay Enabled | Pass | `screenshots/T6.4-1-app-assignment-removed.png` to `T6.4-4-aws-user-disabled.png` |
