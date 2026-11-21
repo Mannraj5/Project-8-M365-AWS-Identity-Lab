@@ -20,11 +20,11 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | 0 Preparation | 3 | 3 | 0 | 0 | 0 |
 | 1 Identity foundation | 4 | 3 | 0 | 1 | 0 |
 | 2 Conditional Access | 7 | 0 | 0 | 7 | 0 |
-| 3 Privileged access & lifecycle | 6 | 1 | 0 | 2 | 3 |
+| 3 Privileged access & lifecycle | 6 | 4 | 0 | 2 | 0 |
 | 4 Intune & Autopilot | 5 | 0 | 0 | 5 | 0 |
 | 5 Defender | 4 | 0 | 0 | 4 | 0 |
 | 6 AWS workforce access | 6 | 0 | 0 | 0 | 6 |
-| **Total** | **35** | **7** | **0** | **19** | **9** |
+| **Total** | **35** | **10** | **0** | **19** | **6** |
 
 ## Test register
 
@@ -47,9 +47,9 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | T3.1 | 3 | alex.admin creates a user **before** PIM activation | Fails: insufficient privileges | 2026-11-20 | Signed in to the Entra admin center as alex.admin (no directory role): 'Create new user', Edit and Delete are disabled. Finding: 'Invite external user' is still allowed for non-admins (tenant default), and non-admins can browse the admin center. Logged as RB-002/RB-003. Part 2 (manual just-in-time, compensating for EX-008): User Administrator assigned to alex.admin, user created by alex, test user deleted, role removed after about 10 minutes; audit log shows Add member to role (1:06), Add user (1:10), Remove member from role (1:16), all Success | Pass | `screenshots/T3.1-no-role-cannot-create-user.png`, `screenshots/T3.1b-1-role-granted.png` to `T3.1b-5-audit-log.png` |
 | T3.2 | 3 | alex.admin activates User/Global Admin via PIM, retries | Succeeds; activation needed MFA + justification (+ Owner approval for GA) | 2026-11-20 | EX-008: PIM needs Entra ID P2 | Blocked | |
 | T3.3 | 3 | PIM audit log | Shows request, approval, activation and expiry | 2026-11-20 | EX-008: PIM needs Entra ID P2 | Blocked | |
-| T3.4 | 3 | Joiner runbook: create test user in Finance | Lands in SG-Dept-Finance, licensed, MFA registration prompted | | | Not run | |
-| T3.5 | 3 | Mover runbook: change Finance → Advice, then re-run `New-LabGroups.ps1 -FreeTier` | Leaves SG-Dept-Finance, joins SG-Dept-Advice; access changes | | | Not run | |
-| T3.6 | 3 | Leaver runbook: `Invoke-Leaver.ps1` on test user | Sign-in fails within the documented target (≤ 15 min) | | | Not run | |
+| T3.4 | 3 | Joiner runbook: create test user in Finance | Lands in SG-Dept-Finance, licensed, MFA registration prompted | 2026-11-21 | Nina Patel created (Finance) and synced to SG-All-Staff and SG-Dept-Finance; MFA registration enforced by Security Defaults (T1.4); no licence on Free (EX-004) | Pass | `T3.4-T3.6-lifecycle.md` |
+| T3.5 | 3 | Mover runbook: change Finance → Advice, then re-run `New-LabGroups.ps1 -FreeTier` | Leaves SG-Dept-Finance, joins SG-Dept-Advice; access changes | 2026-11-21 | Department Finance → Advice, re-sync: added to SG-Dept-Advice and removed from SG-Dept-Finance in the same run | Pass | `T3.4-T3.6-lifecycle.md` |
+| T3.6 | 3 | Leaver runbook: `Invoke-Leaver.ps1` on test user | Sign-in fails within the documented target (≤ 15 min) | 2026-11-21 | Invoke-Leaver.ps1 at 13:46:54: sign-in blocked, sessions revoked, removed from SG-All-Staff and SG-Dept-Advice. Next sign-in attempt refused: 'Your account has been locked' (within the 15-minute target) | Pass | `T3.4-T3.6-lifecycle.md`, `screenshots/T3.6-leaver-signin-refused.png` |
 | T4.1 | 4 | Autopilot: VM reset, user-driven enrolment as staff user | ESP completes; device Entra joined | 2026-11-20 | EX-009: Intune/Autopilot licence not available card-free | Blocked | |
 | T4.2 | 4 | Compliance policy | Device reports Compliant | 2026-11-20 | EX-009: Intune/Autopilot licence not available card-free | Blocked | |
 | T4.3 | 4 | Turn firewall off on the VM | Device goes Non-compliant; M365 blocked by CA004 | 2026-11-20 | EX-009: Intune/Autopilot licence not available card-free | Blocked | |
