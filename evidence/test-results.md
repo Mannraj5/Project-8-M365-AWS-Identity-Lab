@@ -23,8 +23,8 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | 3 Privileged access & lifecycle | 6 | 4 | 0 | 2 | 0 |
 | 4 Intune & Autopilot | 5 | 0 | 0 | 5 | 0 |
 | 5 Defender | 4 | 0 | 0 | 4 | 0 |
-| 6 AWS workforce access | 6 | 3 | 0 | 0 | 3 |
-| **Total** | **35** | **13** | **0** | **19** | **3** |
+| 6 AWS workforce access | 6 | 4 | 0 | 0 | 2 |
+| **Total** | **35** | **14** | **0** | **19** | **2** |
 
 ## Test register
 
@@ -63,7 +63,7 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | T6.2 | 6 | Developer signs in through Entra (My Apps → AWS) | Lands in AWS access portal; Dev = Developer, Prod = ReadOnly | 2026-11-21 | sam.okafor signed in at myapps.microsoft.com with his Entra account (Security Defaults MFA), opened the AWS IAM Identity Center tile and landed in the AWS access portal with no AWS password (SAML). Portal shows harbourline-dev → Developer and harbourline-prod → ReadOnly | Pass | `screenshots/T6.2-sso-access-portal-sam.png` |
 | T6.3 | 6 | Developer tries to create an S3 bucket in Prod | AccessDenied | 2026-11-21 | Same user (sam.okafor), same action (S3 CreateBucket, Sydney): harbourline-prod as ReadOnly → 'Failed to create bucket… s3:CreateBucket permission is required'; harbourline-dev as Developer → bucket created (then deleted) | Pass | `screenshots/T6.3-prod-readonly-denied.png`, `screenshots/T6.3-dev-developer-allowed.png` |
 | T6.4 | 6 | Remove a developer's access in Entra (Free tier: unassign the user from the AWS app, EX-011) | After next SCIM cycle, no AWS access | 2026-11-21 | ella.ruiz unassigned from the AWS IAM Identity Center app in Entra; Provision on demand sent active=false straight away (no 40-minute wait); Identity Center shows Ella Disabled while sam and alex stay Enabled | Pass | `screenshots/T6.4-1-app-assignment-removed.png` to `T6.4-4-aws-user-disabled.png` |
-| T6.5 | 6 | `scripts/aws/find-signin-events.sh` | CloudTrail shows the Identity Center sign-in | | | Not run | |
+| T6.5 | 6 | CloudTrail shows the Identity Center (SSO) sign-in | CloudTrail shows the Identity Center sign-in | 2026-11-21 | Event history, source sso.amazonaws.com: Authenticate (17:27:11) and Federate (17:28:10, 17:35:42) for the developer's sessions. Federate record: userIdentity.type = IdentityCenterUser, serviceEventDetails.role_name = ReadOnly, account = harbourline-prod, region ap-southeast-2. Admin actions (CreateAccountAssignment by root) also logged. Org trail harbourline-org-trail now Logging for all accounts | Pass | `screenshots/T6.5-cloudtrail-federate-event.png`, `screenshots/T6-cloudtrail-org-trail-logging.png` |
 | T6.6 | 6 | Legacy IAM user retired (`retire-legacy-iam-user.sh`) | Credential report shows no IAM users | | | Not run | |
 
 ## Detailed records
