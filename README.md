@@ -70,7 +70,7 @@ Full design: [`docs/as-built.md`](docs/as-built.md).
 | 6 | AWS workforce access | Not started |
 | 7 | Documentation and publishing | Not started |
 
-Tests: **6 passed, 19 blocked by licensing, 10 to run** ([`evidence/test-results.md`](evidence/test-results.md)).
+Tests: **7 passed, 19 blocked by licensing, 9 to run** ([`evidence/test-results.md`](evidence/test-results.md)).
 
 ## Repository layout
 

@@ -20,11 +20,11 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | 0 Preparation | 3 | 3 | 0 | 0 | 0 |
 | 1 Identity foundation | 4 | 3 | 0 | 1 | 0 |
 | 2 Conditional Access | 7 | 0 | 0 | 7 | 0 |
-| 3 Privileged access & lifecycle | 6 | 0 | 0 | 2 | 4 |
+| 3 Privileged access & lifecycle | 6 | 1 | 0 | 2 | 3 |
 | 4 Intune & Autopilot | 5 | 0 | 0 | 5 | 0 |
 | 5 Defender | 4 | 0 | 0 | 4 | 0 |
 | 6 AWS workforce access | 6 | 0 | 0 | 0 | 6 |
-| **Total** | **35** | **6** | **0** | **19** | **10** |
+| **Total** | **35** | **7** | **0** | **19** | **9** |
 
 ## Test register
 
@@ -44,7 +44,7 @@ email addresses, IP addresses, AWS account IDs, access key IDs, device serials.
 | T2.5 | 2 | CA005: What If with sign-in risk = High | CA005 would apply: Block | 2026-11-20 | EX-005: Conditional Access needs Entra ID P1 | Blocked | |
 | T2.6 | 2 | CA006: What If with country ≠ AU (or VPN exit outside AU) | Blocked by CA006 | 2026-11-20 | EX-005: Conditional Access needs Entra ID P1 | Blocked | |
 | T2.7 | 2 | `Export-LabCAPolicies.ps1` | 6 JSON files in `config/conditional-access/exported/`, no tenant IDs | 2026-11-20 | EX-005: Conditional Access needs Entra ID P1 | Blocked | |
-| T3.1 | 3 | alex.admin creates a user **before** PIM activation | Fails: insufficient privileges | | | Not run | |
+| T3.1 | 3 | alex.admin creates a user **before** PIM activation | Fails: insufficient privileges | 2026-11-20 | Signed in to the Entra admin center as alex.admin (no directory role): 'Create new user', Edit and Delete are disabled. Finding: 'Invite external user' is still allowed for non-admins (tenant default), and non-admins can browse the admin center. Logged as RB-002/RB-003 | Pass | `screenshots/T3.1-no-role-cannot-create-user.png` |
 | T3.2 | 3 | alex.admin activates User/Global Admin via PIM, retries | Succeeds; activation needed MFA + justification (+ Owner approval for GA) | 2026-11-20 | EX-008: PIM needs Entra ID P2 | Blocked | |
 | T3.3 | 3 | PIM audit log | Shows request, approval, activation and expiry | 2026-11-20 | EX-008: PIM needs Entra ID P2 | Blocked | |
 | T3.4 | 3 | Joiner runbook: create test user in Finance | Lands in SG-Dept-Finance, licensed, MFA registration prompted | | | Not run | |
