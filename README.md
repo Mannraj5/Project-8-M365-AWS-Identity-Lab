@@ -6,7 +6,8 @@ environment for a fictional regulated firm, with evidence an auditor would accep
 > **Status: built and tested, on Microsoft Entra ID Free + AWS.** 16 tests passed,
 > 19 blocked by licensing (each with an exception and compensating control), 0 outstanding.
 > Start with the [executive summary](docs/executive-summary.md), then the
-> [as-built](docs/as-built.md).
+> [as-built](docs/as-built.md). A 10-slide walkthrough deck is in
+> [`docs/Project8-Identity-Lab-walkthrough.pptx`](docs/Project8-Identity-Lab-walkthrough.pptx).
 
 ## Results at a glance
 
