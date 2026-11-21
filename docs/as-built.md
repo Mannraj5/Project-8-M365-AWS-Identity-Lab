@@ -116,6 +116,17 @@ Optional guardrail SCP: `config/aws/scp-guardrails.json` (region lock, trail pro
 
 SCIM: Entra enterprise app "AWS IAM Identity Center", scope = assigned users and groups, cycle ≈ 40 min.
 
+**IAM Identity Center instance (decided 2026-11-21):** organisation instance, **single-Region (ap-southeast-2)**,
+encrypted with an **AWS owned key**. Rejected the console default (multi-Region, replicated to US West (Oregon),
+customer managed KMS key) for two reasons: data residency (identity data stays in Australia) and cost (no KMS key
+charges). Evidence: `evidence/screenshots/T6-identity-center-single-region.png`.
+
+**Member account root users:** centralised root access is enabled (root credentials management and privileged
+root actions); member accounts have no root credentials, and root-only tasks run from the management account.
+
+**Entra ID Free limits (EX-011):** SCIM provisions **users only**; group provisioning needs P1, so permission sets
+are assigned to users directly, not to SG-AWS-* groups.
+
 ## 9. Change log
 
 | Date | Change | By |
